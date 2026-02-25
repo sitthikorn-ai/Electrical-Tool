@@ -808,7 +808,6 @@ module MyExtensions
 
       DICT_WIRE = 'SU_Electrical_Wire'.freeze
       ARC_SEGMENTS = 24  # number of segments for arc smoothness
-      FILLET_RADIUS = 60.mm  # 60mm radius for 90° corners in line mode
       FILLET_ANGLE_TOL = 0.087  # ~5° tolerance for detecting 90° corners
 
       def initialize(wire_label, nb_wires, wire_section, dialog = nil)
@@ -847,6 +846,10 @@ module MyExtensions
         @prev_line_edges = []       # edges of previous line segment (for trimming at fillet)
         @prev_start_point = nil     # start point of previous line segment
 
+        # Fillet Radius for 90° corners in line mode (user-configurable via VCB)
+        fillet_val = Sketchup.read_default("SKH_Wiring", "FilletRadius", 60.0).to_f
+        @fillet_radius = fillet_val.mm
+
         # Axis Lock: nil = free, :x = Red, :y = Green, :z = Blue
         @axis_lock = nil
         @shift_locked = false  # true when lock was set by Shift (hold-to-lock)
@@ -858,6 +861,7 @@ module MyExtensions
         @input_point = Sketchup::InputPoint.new
         @input_point2 = Sketchup::InputPoint.new
         update_status_text
+        update_vcb_label
         
         # Load style for color by material
         style_path = File.join(EXTENSION_ROOT, 'style', 'Color by Material.style')
@@ -986,6 +990,7 @@ module MyExtensions
           @prev_start_point = nil
           @axis_lock = nil
           update_status_text
+          update_vcb_label
           view.invalidate
         when VK_SHIFT
           # Hold Shift = auto-detect & lock nearest axis from current direction
@@ -1072,6 +1077,31 @@ module MyExtensions
       VK_DOWN  = 40   # Unlock axis
       VK_SHIFT = 16   # Hold to lock inferred axis
 
+      def enableVCB?; true; end
+
+      def onUserText(text, view)
+        if @line_mode
+          # Parse fillet radius from VCB input
+          begin
+            val = text.to_l
+            if val > 0
+              @fillet_radius = val
+              # Save as mm value to preferences
+              Sketchup.write_default("SKH_Wiring", "FilletRadius", val.to_mm)
+              update_status_text
+              update_vcb_label
+              view.invalidate
+            else
+              UI.beep
+              Sketchup.status_text = "Fillet Radius ต้องมากกว่า 0"
+            end
+          rescue ArgumentError
+            UI.beep
+            Sketchup.status_text = "Invalid fillet radius value"
+          end
+        end
+      end
+
       # --- Drawing (preview) ---
 
       def draw(view)
@@ -1140,7 +1170,7 @@ module MyExtensions
           is_90 = (angle - Math::PI / 2.0).abs < FILLET_ANGLE_TOL
 
           if is_90
-            r = FILLET_RADIUS
+            r = @fillet_radius
             prev_len = @prev_start_point.distance(pt1)
 
             if prev_len > r && distance > r
@@ -1494,7 +1524,7 @@ module MyExtensions
           is_90 = (angle - Math::PI / 2.0).abs < FILLET_ANGLE_TOL
 
           if is_90
-            r = FILLET_RADIUS
+            r = @fillet_radius
             prev_len = @prev_start_point.distance(pt1)
 
             if prev_len > r && distance > r
@@ -1549,8 +1579,9 @@ module MyExtensions
               # Distance text
               mid = Geom::Point3d.linear_combination(0.5, pt1, 0.5, pt2)
               screen_mid = view.screen_coords(mid)
+              fillet_mm = @fillet_radius.to_mm.round(1)
               view.draw_text([screen_mid.x + 10, screen_mid.y - 10, 0],
-                sprintf("%.2f m [Line+R60]", distance.to_m))
+                sprintf("%.2f m [Line+R#{fillet_mm}mm]", distance.to_m))
               return
             end
           end
@@ -1646,11 +1677,22 @@ module MyExtensions
         ])
       end
 
+      def update_vcb_label
+        if @line_mode
+          Sketchup.vcb_label = "Fillet Radius:"
+          Sketchup.vcb_value = @fillet_radius.to_l.to_s
+        else
+          Sketchup.vcb_label = "Length:"
+          Sketchup.vcb_value = ""
+        end
+      end
+
       def update_status_text
-        mode_text = @line_mode ? " [Mode: Line+R60]" : " [Mode: Arc]"
+        fillet_mm = @fillet_radius.to_mm.round(1)
+        mode_text = @line_mode ? " [Mode: Line+R#{fillet_mm}mm]" : " [Mode: Arc]"
         dir_text = @reverse_arc ? " [Bulge -]" : " [Bulge +]"
         height_text = " [H=1/#{@bulge_denominator.to_i}]"
-        arc_opts = @line_mode ? "" : " | Tab=Toggle Bulge#{dir_text} | Alt=Toggle Height#{height_text}"
+        arc_opts = @line_mode ? " | VCB=Fillet Radius" : " | Tab=Toggle Bulge#{dir_text} | Alt=Toggle Height#{height_text}"
 
         lock_text = case @axis_lock
           when :x then " | Lock: Red(X)"
@@ -2604,9 +2646,9 @@ module MyExtensions
 
       @input_devices_dialog = nil
 
-      def self.show_input_devices_dialog
+      def self.toggle_input_devices_dialog
         if @input_devices_dialog
-          @input_devices_dialog.bring_to_front
+          @input_devices_dialog.close
           return
         end
 
@@ -2622,7 +2664,6 @@ module MyExtensions
 
         html_path = File.join(EXTENSION_ROOT, 'html', 'input_devices.html')
         dialog.set_file(html_path)
-        dialog.set_position(70, 115)
 
         # Shared reference to currently active placement tool (captured by closures)
         active_place_tool = nil

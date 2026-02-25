@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Inspector Overlay</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #F0F0F0;
+            /* Native Sketchup Dialog Background */
+            color: #333333;
+            margin: 0;
+            padding: 10px;
+            font-size: 11px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            box-sizing: border-box;
+            user-select: none;
+            backdrop-filter: none;
+        }
+
+        h3 {
+            margin-top: 0;
+            margin-bottom: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #000000;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #CCCCCC;
+            padding-bottom: 4px;
+        }
+
+        #content {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .data-row {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 6px;
+            background: #FFFFFF;
+            border-radius: 4px;
+            padding: 6px;
+            border: 1px solid #DDDDDD;
+            transition: all 0.2s ease;
+        }
+
+        .data-row:hover {
+            background: #F9F9F9;
+            border: 1px solid #CCCCCC;
+        }
+
+        .label {
+            font-size: 10px;
+            color: #666666;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .value {
+            font-size: 11px;
+            color: #000000;
+            font-weight: 400;
+            word-wrap: break-word;
+        }
+
+        .circuit-badge {
+            display: inline-block;
+            background-color: #E0E0E0;
+            color: #000000;
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-size: 10px;
+            margin-right: 4px;
+            border: 1px solid #CCCCCC;
+        }
+
+        .empty-state {
+            color: #64748B;
+            text-align: center;
+            margin-top: 40px;
+            font-style: italic;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 2px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748B;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- <h3>Inspector</h3> -->
+    <div id="content">
+        <div class="empty-state">No selection.</div>
+    </div>
+
+    <script>
+        function updateInspectorData(data) {
+            const contentDiv = document.getElementById('content');
+            contentDiv.innerHTML = '';
+
+            if (!data.selected) {
+                contentDiv.innerHTML = '<div class="empty-state">No object selected.</div>';
+                return;
+            }
+
+            if (data.items.length > 0) {
+                const item = data.items[0];
+
+                if (item.count) {
+                    contentDiv.innerHTML = `<div class="empty-state">${item.count} items selected.<br>Select a single object.</div>`;
+                    return;
+                }
+
+                let html = '';
+                if (item.circuit !== 'None' && typeof item.circuit === 'object') {
+                    const c_name = item.circuit.circuit_name || '?';
+                    const wire = item.circuit.wire_size_sqmm || '?';
+                    const breaker = item.circuit.breaker_at || '?';
+
+                    html += `
+                        <div class="data-row" style="border-left: 2px solid #38BDF8;">
+                            <div class="label">Circuit Name</div>
+                            <div class="value">
+                                <span class="circuit-badge">${c_name}</span>
+                                <br><span style="font-size:10px; color:#666666;">Brk:</span> ${breaker}A  <span style="font-size:10px; color:#666666;">Wire:</span> ${wire}
+                            </div>
+                        </div>`;
+                } else if (item.circuit === 'None') {
+                    html += `
+                        <div class="data-row">
+                            <div class="label">Circuit Name</div>
+                            <div class="value" style="color:#64748B; font-style:italic;">Not assigned to circuit</div>
+                        </div>`;
+                }
+
+                html += `
+                    <div class="data-row">
+                        <div class="label">Demand load (VA)</div>
+                        <div class="value">${item.load}</div>
+                    </div>`;
+
+                contentDiv.innerHTML = html;
+            }
+        }
+
+        document.addEventListener('contextmenu', event => event.preventDefault());
+    </script>
+</body>
+
+</html>
