@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Circuit</title>
+    <style>
+        :root {
+            --primary-color: #0078d4;
+            --bg-color: transparent;
+            --card-bg: #ffffff;
+            --text-color: #323130;
+            --border-color: #e1dfdd;
+            --input-border: #8a8886;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 8px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18), 0 1px 4px rgba(0, 0, 0, 0.1);
+            padding: 16px 18px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            animation: slideIn 0.25s ease-out;
+        }
+
+        h2 {
+            margin: 0 0 2px 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #605e5c;
+        }
+
+        input[type="text"] {
+            padding: 6px 10px;
+            border: 1px solid var(--input-border);
+            border-radius: 4px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary-color);
+            border-width: 2px;
+            padding: 5px 9px;
+        }
+
+        .readonly-field {
+            background-color: #f3f2f1;
+            padding: 6px 10px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #201f1e;
+        }
+
+        .phase-load-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            background-color: #faf9f8;
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 4px;
+        }
+
+        .phase-box {
+            text-align: center;
+        }
+
+        .phase-label {
+            font-size: 10px;
+            color: #605e5c;
+            display: block;
+        }
+
+        .phase-val {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        button {
+            padding: 5px 16px;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            border: none;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #006cbe;
+        }
+
+        .btn-primary:active {
+            background-color: #005a9e;
+        }
+
+        .btn-default {
+            background-color: #e1dfdd;
+            color: #201f1e;
+        }
+
+        .btn-default:hover {
+            background-color: #d2d0ce;
+        }
+
+        .btn-default:active {
+            background-color: #c8c6c4;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h2>Update Circuit</h2>
+
+        <!-- Editable Name -->
+        <div class="form-group">
+            <label for="circuitName">Circuit Name</label>
+            <input type="text" id="circuitName" value="LP-1">
+        </div>
+
+        <!-- Read Only Info -->
+        <div class="form-group">
+            <label>Load Type</label>
+            <div id="loadType" class="readonly-field">Lighting</div>
+        </div>
+
+        <div class="form-group">
+            <label>Calculated Load (Watts)</label>
+            <div id="totalLoad" class="readonly-field">1200 W</div>
+        </div>
+
+        <div class="form-group">
+            <label>Calculated Demand (VA)</label>
+            <div id="totalVA" class="readonly-field">1333 VA</div>
+        </div>
+
+        <div class="form-group">
+            <label>Breaker Size (AT)</label>
+            <div id="breakerSize" class="readonly-field">20 A</div>
+        </div>
+
+        <div class="form-group">
+            <label>Cable Size (sq.mm)</label>
+            <div id="cableSize" class="readonly-field">2.5 sq.mm</div>
+        </div>
+
+        <div class="actions">
+            <button class="btn-default" onclick="cancel()">Cancel</button>
+            <button class="btn-primary" onclick="update()">Update</button>
+        </div>
+    </div>
+
+    <script>
+        // Data populated from Ruby
+        let currentData = {};
+
+        function setData(data) {
+            currentData = data;
+            document.getElementById('circuitName').value = data.circuit_name || '';
+            document.getElementById('loadType').textContent = data.load_type || '-';
+            document.getElementById('totalLoad').textContent = (data.connected_load_w || 0) + ' W';
+            document.getElementById('totalVA').textContent = (data.demand_load_va || 0) + ' VA';
+            document.getElementById('breakerSize').textContent = (data.breaker_at || '-') + ' A';
+            document.getElementById('cableSize').textContent = (data.wire_size_sqmm || '-') + ' sq.mm';
+        }
+
+        function update() {
+            const newName = document.getElementById('circuitName').value;
+            // Send back to Ruby
+            window.location.href = 'skp:update_circuit@' + encodeURIComponent(newName);
+        }
+
+        function cancel() {
+            window.location.href = 'skp:cancel';
+        }
+
+        // Disable right-click
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // Notify Ruby that UI is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            window.location.href = 'skp:ui_ready';
+        });
+
+        // Periodically save dialog position so Ruby always has the latest
+        // Compute chromeHeight once to avoid fluctuation-induced Y drift
+        var _chromeHeight = 0;
+        setTimeout(function() {
+            _chromeHeight = window.outerHeight - window.innerHeight;
+        }, 300);
+        setInterval(function() {
+            var x = window.screenX;
+            var y = window.screenY - _chromeHeight;
+            if (x > 0 || y > 0) {
+                sketchup.savePosition(x, y);
+            }
+        }, 500);
+    </script>
+</body>
+
+</html>

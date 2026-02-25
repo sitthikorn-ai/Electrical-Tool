@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification</title>
+    <style>
+        :root {
+            --primary-color: #0078d4;
+            --success-color: #107c10;
+            --error-color: #d13438;
+            --warning-color: #ffb900;
+            --text-color: #323130;
+            --bg-color: #ffffff;
+            --border-radius: 4px;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            box-sizing: border-box;
+            overflow: auto;
+        }
+
+        .icon-container {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .icon-success {
+            color: var(--success-color);
+        }
+
+        .icon-error {
+            color: var(--error-color);
+        }
+
+        .icon-info {
+            color: var(--primary-color);
+        }
+
+        .icon-warning {
+            color: var(--warning-color);
+        }
+
+        h2 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        p {
+            margin: 0 0 14px 0;
+            font-size: 13px;
+            line-height: 1.4;
+            text-align: center;
+            color: #605e5c;
+            white-space: pre-line;
+            word-break: break-word;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 6px 20px;
+            border-radius: var(--border-radius);
+            font-size: 13px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            outline: none;
+        }
+
+        button:hover {
+            background-color: #006cbe;
+        }
+
+        button:active {
+            background-color: #005a9e;
+        }
+
+        /* Shake animation for error */
+        .shake {
+            animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+        }
+
+        @keyframes shake {
+
+            10%,
+            90% {
+                transform: translate3d(-1px, 0, 0);
+            }
+
+            20%,
+            80% {
+                transform: translate3d(2px, 0, 0);
+            }
+
+            30%,
+            50%,
+            70% {
+                transform: translate3d(-4px, 0, 0);
+            }
+
+            40%,
+            60% {
+                transform: translate3d(4px, 0, 0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="icon" class="icon-container"></div>
+    <h2 id="title">Message Title</h2>
+    <p id="message">Message content goes here.</p>
+    <button onclick="closeDialog()">OK</button>
+
+    <script>
+        function setContent(title, message, type) {
+            document.getElementById('title').textContent = title;
+            document.getElementById('message').textContent = message;
+
+            const icon = document.getElementById('icon');
+            icon.className = 'icon-container'; // reset
+
+            let iconSymbol = '';
+            switch (type) {
+                case 'success':
+                    iconSymbol = '✓';
+                    icon.classList.add('icon-success');
+                    break;
+                case 'error':
+                    iconSymbol = '✕';
+                    icon.classList.add('icon-error');
+                    document.body.classList.add('shake');
+                    break;
+                case 'warning':
+                    iconSymbol = '!';
+                    icon.classList.add('icon-warning');
+                    break;
+                default: // info
+                    iconSymbol = 'i';
+                    icon.classList.add('icon-info');
+            }
+            icon.textContent = iconSymbol;
+        }
+
+        function closeDialog() {
+            // Signal Ruby to close
+            window.location.href = 'skp:close_dialog';
+        }
+
+        // Disable right-click
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // Notify Ruby that UI is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            window.location.href = 'skp:ui_ready';
+        });
+    </script>
+</body>
+
+</html>

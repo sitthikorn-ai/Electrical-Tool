@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ตารางรายการโหลด</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tahoma', 'Leelawadee UI', 'Microsoft Sans Serif', sans-serif;
+            font-size: 10px;
+            background: #fff;
+            color: #000;
+            padding: 8px;
+        }
+
+        .main-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 2px solid #000;
+        }
+
+        .main-table td,
+        .main-table th {
+            border: 1px solid #000;
+            padding: 2px 4px;
+            vertical-align: middle;
+            font-size: 10px;
+        }
+
+        .title-row td {
+            text-align: center;
+            font-weight: bold;
+            font-size: 13px;
+            padding: 4px;
+        }
+
+        .header-info td {
+            font-size: 10px;
+            padding: 2px 6px;
+        }
+
+        .header-info .label {
+            font-weight: normal;
+            white-space: nowrap;
+        }
+
+        .header-info input {
+            border: none;
+            border-bottom: 1px dotted #999;
+            background: transparent;
+            font-family: inherit;
+            font-size: 10px;
+            outline: none;
+            width: 100%;
+            padding: 1px 2px;
+        }
+
+        .header-info input:focus {
+            border-bottom: 1px solid #0066d6;
+            background: #f0f7ff;
+        }
+
+        .circuit-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .circuit-table th,
+        .circuit-table td {
+            border: 1px solid #000;
+            padding: 1px 3px;
+            text-align: center;
+            font-size: 9px;
+            vertical-align: middle;
+            height: 24px;
+        }
+
+        .circuit-table th {
+            background-color: #fff;
+            font-weight: bold;
+            font-size: 9px;
+        }
+
+        .circuit-table .sub-header th {
+            font-weight: normal;
+            font-size: 8.5px;
+        }
+
+        .circuit-table td.la {
+            text-align: left;
+            padding-left: 4px;
+        }
+
+        .sld-cell {
+            padding: 0 !important;
+            vertical-align: top !important;
+        }
+
+        .footer-row td {
+            font-weight: bold;
+        }
+
+        .toolbar {
+            margin-bottom: 6px;
+            display: flex;
+            gap: 6px;
+        }
+
+        .toolbar button {
+            padding: 4px 10px;
+            font-size: 11px;
+            border: 1px solid #999;
+            background: #f0f0f0;
+            cursor: pointer;
+            font-family: inherit;
+            border-radius: 2px;
+        }
+
+        .toolbar button:hover {
+            background: #e0e0e0;
+        }
+
+        @media print {
+            .toolbar {
+                display: none;
+            }
+
+            body {
+                padding: 0;
+            }
+        }
+
+        .clickable {
+            cursor: pointer;
+            text-decoration: underline;
+            font-weight: bold;
+        }
+
+        .clickable:hover {
+            color: #0066d6 !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="toolbar">
+        <button onclick="requestData()">🔄 โหลดข้อมูลใหม่</button>
+        <button onclick="exportToCSV()">📄 ส่งออก CSV</button>
+        <button onclick="window.print()">🖨️ พิมพ์</button>
+    </div>
+
+    <table class="main-table" id="mainTable">
+        <!-- ===== Title ===== -->
+        <tr class="title-row">
+            <td colspan="30">ตารางรายการโหลด</td>
+        </tr>
+
+        <!-- ===== Header Row 1 ===== -->
+        <tr class="header-info">
+            <td colspan="4"><span class="label">เลขที่แผงย่อย</span></td>
+            <td colspan="5"><input type="text" id="panelName" value="LC1"></td>
+            <td colspan="4"><span class="label">เบรกเกอร์วงจรย่อย</span></td>
+            <td colspan="7"><input type="text" id="subBreakerRating" value="IC. > 6 KA. at 240 V.ac., 415 V.ac."></td>
+            <td colspan="4"><span class="label">สถานที่ติดตั้ง</span></td>
+            <td colspan="3"><span class="label">ตามแบบ</span></td>
+            <td colspan="3"><input type="text" id="drawingRef" value=""></td>
+        </tr>
+        <!-- ===== Header Row 2 ===== -->
+        <tr class="header-info">
+            <td colspan="4"><span class="label">ระบบไฟฟ้า</span></td>
+            <td colspan="5"><input type="text" id="systemType" value="3 Ø 4 WIRE WITH GROUND 380/220 V.ac. 50 Hz"></td>
+            <td colspan="4"><span class="label">จำนวนวงจรสูงสุด</span></td>
+            <td colspan="7"><input type="text" id="maxCircuits" value="18 วงจร"></td>
+            <td colspan="4"><span class="label">พิกัดกระแสบาร์</span></td>
+            <td colspan="3"><input type="text" id="busbarRating" value="> 100 A."></td>
+            <td colspan="3"><span class="label">เลขที่แบบ</span> <input type="text" id="drawingNo" value="-"
+                    style="width:50px;"></td>
+        </tr>
+        <!-- ===== Header Row 3 ===== -->
+        <tr class="header-info">
+            <td colspan="4"><span class="label">ระดับป้องกัน</span></td>
+            <td colspan="5"><input type="text" id="protectionLevel" value="NEMA TYPE 1"></td>
+            <td colspan="21"></td>
+        </tr>
+
+        <!-- ===== Circuit Table ===== -->
+        <tr>
+            <td colspan="30" style="padding:0; border:none;">
+                <table class="circuit-table" id="circuitTable">
+                    <thead>
+                        <tr>
+                            <!-- LEFT 9 cols -->
+                            <th rowspan="2" style="width:90px;">รายการ</th>
+                            <th colspan="2">สายไฟ</th>
+                            <th rowspan="2" style="width:50px;">ท่อ<br>(ø IN)</th>
+                            <th colspan="2">เบรกเกอร์</th>
+                            <th colspan="3">เลขที่</th>
+                            <!-- CENTER 1 col -->
+                            <th rowspan="2" style="width:130px;">ไดอะแกรม</th>
+                            <!-- RIGHT 10 cols -->
+                            <th rowspan="2" style="width:30px;">เลขที่</th>
+                            <th colspan="3" style="min-width:60px;">VA</th>
+                            <th colspan="2">เบรกเกอร์</th>
+                            <th rowspan="2" style="width:50px;">ท่อ<br>(ø IN)</th>
+                            <th colspan="2">สายไฟ</th>
+                            <th rowspan="2" style="width:90px;">รายการ</th>
+                        </tr>
+                        <tr class="sub-header">
+                            <th style="width:70px;">SIZE (Sq.mm.)</th>
+                            <th style="width:35px;">TYPE</th>
+                            <th style="width:30px;">POLE</th>
+                            <th style="width:30px;">AT</th>
+                            <th style="width:30px;">A</th>
+                            <th style="width:30px;">B</th>
+                            <th style="width:30px;">C</th>
+                            <!-- right sub -->
+                            <th style="width:35px;">A</th>
+                            <th style="width:35px;">B</th>
+                            <th style="width:35px;">C</th>
+                            <th style="width:30px;">POLE</th>
+                            <th style="width:30px;">AT</th>
+                            <th style="width:70px;">SIZE (Sq.mm.)</th>
+                            <th style="width:35px;">TYPE</th>
+                        </tr>
+                    </thead>
+                    <tbody id="circuitBody"></tbody>
+                    <tfoot>
+                        <tr class="footer-row">
+                            <td colspan="6" style="text-align:right; padding-right:6px;"></td>
+                            <td id="sumA_L">-</td>
+                            <td id="sumB_L">-</td>
+                            <td id="sumC_L">-</td>
+                            <td style="font-size:9px;">A&emsp;&emsp;B&emsp;&emsp;C</td>
+                            <td></td>
+                            <td id="sumA_R">-</td>
+                            <td id="sumB_R">-</td>
+                            <td id="sumC_R">-</td>
+                            <td colspan="6"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="9" style="text-align:center; font-weight:bold;">รวมโหลดทั้งหมด (VA.)</td>
+                            <td id="totalVA_A" style="text-align:center; font-weight:bold;">-</td>
+                            <td></td>
+                            <td id="totalVA_B" style="text-align:center; font-weight:bold;">-</td>
+                            <td colspan="2"></td>
+                            <td id="totalVA_C" style="text-align:center; font-weight:bold;">-</td>
+                            <td colspan="5"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </td>
+        </tr>
+
+        <!-- ===== Footer Summary ===== -->
+        <tr class="header-info">
+            <td colspan="4"><span class="label">กระแสเฟส A</span></td>
+            <td colspan="3"><input type="text" id="currentA" value="-" readonly></td>
+            <td colspan="6"><span class="label">เมนเบรกเกอร์ (TYPE)</span></td>
+            <td colspan="7"><input type="text" id="mainBreakerType" value="MOLDED CASE-THERMAL MAGNETIC TYPE"></td>
+            <td colspan="4"><span class="label">ขนาดสายป้อน</span></td>
+            <td colspan="6"><input type="text" id="feederWire" value="-"></td>
+        </tr>
+        <tr class="header-info">
+            <td colspan="4"><span class="label">กระแสเฟส B</span></td>
+            <td colspan="3"><input type="text" id="currentB" value="-" readonly></td>
+            <td colspan="6"><span class="label">ตำแหน่งติดตั้ง (ตอนบน,ตอนล่าง)</span></td>
+            <td colspan="7"><input type="text" id="mountPosition" value="ตอนบน"></td>
+            <td colspan="4"><span class="label">ขนาดท่อร้อยสายป้อน</span></td>
+            <td colspan="6"><input type="text" id="feederConduit" value="-"></td>
+        </tr>
+        <tr class="header-info">
+            <td colspan="4"><span class="label">กระแสเฟส C</span></td>
+            <td colspan="3"><input type="text" id="currentC" value="-" readonly></td>
+            <td colspan="6"><span class="label">Main Breaker</span></td>
+            <td colspan="7"><input type="text" id="mainBreakerSpec" value="3P 50 AT. 100 AF.IC > 25 KA 415 V.ac"></td>
+            <td colspan="4"><span class="label">ลงวันที่</span></td>
+            <td colspan="6"><input type="text" id="dateField" value="-"></td>
+        </tr>
+    </table>
+
+    <script>
+        const sketchup = window.sketchup;
+        const MAX_ROWS = 9; // 18 circuits => 9 rows
+
+        // Generate SVG single-line diagram
+        function generateSLD(numRows) {
+            const rowH = 24;
+            const totalH = numRows * rowH + 40;
+            const cx = 65;
+            const busStart = 22;
+            const pg = 7;
+
+            let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 130 ${totalH}" style="width:100%;height:${totalH}px;">`;
+
+            // Main breaker box
+            s += `<rect x="${cx - 14}" y="2" width="28" height="14" fill="#333" rx="2"/>`;
+            s += `<text x="${cx}" y="11" text-anchor="middle" fill="#fff" font-size="7" font-family="Tahoma">S/N</text>`;
+
+            // Phase labels
+            s += `<text x="${cx - pg}" y="${busStart + 7}" text-anchor="middle" font-size="6" font-family="Tahoma">ØA</text>`;
+            s += `<text x="${cx}" y="${busStart + 7}" text-anchor="middle" font-size="6" font-family="Tahoma">ØB</text>`;
+            s += `<text x="${cx + pg}" y="${busStart + 7}" text-anchor="middle" font-size="6" font-family="Tahoma">ØC</text>`;
+
+            // Bus bars
+            const bEnd = totalH - 20;
+            s += `<line x1="${cx - pg}" y1="${busStart + 9}" x2="${cx - pg}" y2="${bEnd}" stroke="#000" stroke-width="1.5"/>`;
+            s += `<line x1="${cx}" y1="${busStart + 9}" x2="${cx}" y2="${bEnd}" stroke="#000" stroke-width="1.5"/>`;
+            s += `<line x1="${cx + pg}" y1="${busStart + 9}" x2="${cx + pg}" y2="${bEnd}" stroke="#000" stroke-width="1.5"/>`;
+
+            // Branches
+            for (let i = 0; i < numRows; i++) {
+                const y = busStart + 14 + i * rowH;
+                const oddN = i * 2 + 1;
+                const evenN = i * 2 + 2;
+
+                // Left branch
+                s += `<line x1="12" y1="${y}" x2="${cx - pg - 3}" y2="${y}" stroke="#000" stroke-width="0.7"/>`;
+                s += `<circle cx="${cx - pg - 7}" cy="${y}" r="2" fill="none" stroke="#000" stroke-width="0.7"/>`;
+                s += `<text x="7" y="${y + 3}" text-anchor="end" font-size="7" font-family="Tahoma">${oddN}</text>`;
+
+                // Right branch
+                s += `<line x1="${cx + pg + 3}" y1="${y}" x2="118" y2="${y}" stroke="#000" stroke-width="0.7"/>`;
+                s += `<circle cx="${cx + pg + 7}" cy="${y}" r="2" fill="none" stroke="#000" stroke-width="0.7"/>`;
+                s += `<text x="122" y="${y + 3}" text-anchor="start" font-size="7" font-family="Tahoma">${evenN}</text>`;
+            }
+
+            // Ground bus
+            s += `<line x1="${cx - 18}" y1="${bEnd + 4}" x2="${cx + 18}" y2="${bEnd + 4}" stroke="#000" stroke-width="1.5"/>`;
+            s += `<text x="${cx}" y="${bEnd + 14}" text-anchor="middle" font-size="6" font-family="Tahoma">GROUND BUS</text>`;
+
+            s += `</svg>`;
+            return s;
+        }
+
+        function emptyCircuit(n) {
+            return { circuit_no: n, name: 'SPACE', wire_size: '-', wire_type: '-', conduit: '-', breaker_pole: '-', breaker_at: '-', va_a: '-', va_b: '-', va_c: '-', text_color: '#000' };
+        }
+
+        function val(v) { return (v === '' || v === undefined || v === null || v === 0) ? '-' : v; }
+        function numval(v) { const n = parseFloat(v); return isNaN(n) ? 0 : n; }
+
+        function populateTable(data) {
+            const body = document.getElementById('circuitBody');
+            body.innerHTML = '';
+
+            // Prepare left (odd) and right (even) arrays
+            let L = [], R = [];
+            for (let i = 0; i < MAX_ROWS; i++) {
+                L.push(emptyCircuit(i * 2 + 1));
+                R.push(emptyCircuit(i * 2 + 2));
+            }
+
+            // Map data — Ruby now sends data in the exact format we expect
+            if (data && data.length > 0) {
+                data.forEach(c => {
+                    if (!c) return;
+                    const n = c.circuit_no || 0;
+                    const idx = Math.floor((n - 1) / 2);
+                    if (idx < 0 || idx >= MAX_ROWS) return;
+                    const target = (n % 2 === 1) ? L : R;
+                    target[idx] = {
+                        circuit_no: n,
+                        name: c.name || c.circuit_name || 'SPACE',
+                        wire_size: val(c.wire_size),
+                        wire_type: val(c.wire_type),
+                        conduit: val(c.conduit),
+                        breaker_pole: val(c.breaker_pole),
+                        breaker_at: val(c.breaker_at),
+                        va_a: val(c.va_a),
+                        va_b: val(c.va_b),
+                        va_c: val(c.va_c),
+                        va_c: val(c.va_c),
+                        text_color: c.text_color, // Pass color through
+                        entity_id: c.entity_id // Store ID
+                    };
+                });
+            }
+
+            // Build rows using DOM (not innerHTML) to preserve rowSpan
+            const sldHTML = generateSLD(MAX_ROWS);
+
+            for (let i = 0; i < MAX_ROWS; i++) {
+                const tr = document.createElement('tr');
+                const l = L[i], r = R[i];
+
+                // Use persistent color from Ruby, fallback to black
+                const colorL = (l.name !== 'SPACE') ? (l.text_color || '#000') : '#000';
+                const colorR = (r.name !== 'SPACE') ? (r.text_color || '#000') : '#000';
+
+                // === LEFT SIDE (9 cells) ===
+                addCell(tr, l.name, 'la', colorL, l.entity_id);
+                addCell(tr, l.wire_size, '', colorL);
+                addCell(tr, l.wire_type, '', colorL);
+                addCell(tr, l.conduit, '', colorL);
+                addCell(tr, l.breaker_pole, '', colorL);
+                addCell(tr, l.breaker_at, '', colorL);
+                addCell(tr, l.va_a, '', colorL);
+                addCell(tr, l.va_b, '', colorL);
+                addCell(tr, l.va_c, '', colorL);
+
+                // === CENTER SLD (only row 0 with rowSpan) ===
+                if (i === 0) {
+                    const sldTd = document.createElement('td');
+                    sldTd.className = 'sld-cell';
+                    sldTd.rowSpan = MAX_ROWS;
+                    sldTd.innerHTML = sldHTML;
+                    tr.appendChild(sldTd);
+                }
+
+                // === RIGHT SIDE (10 cells) ===
+                addCell(tr, r.circuit_no, '', colorR);
+                addCell(tr, r.va_a, '', colorR);
+                addCell(tr, r.va_b, '', colorR);
+                addCell(tr, r.va_c, '', colorR);
+                addCell(tr, r.breaker_pole, '', colorR);
+                addCell(tr, r.breaker_at, '', colorR);
+                addCell(tr, r.conduit, '', colorR);
+                addCell(tr, r.wire_size, '', colorR);
+                addCell(tr, r.wire_type, '', colorR);
+                addCell(tr, r.name, 'la', colorR, r.entity_id); // FIXED: Added r.entity_id
+
+                body.appendChild(tr);
+            }
+
+            calculateTotals(L, R);
+            autoFit();
+        }
+
+        function addCell(tr, text, cls, color, id) {
+            const td = document.createElement('td');
+            td.textContent = text;
+            if (cls) td.className = cls;
+            if (color) td.style.color = color;
+
+            if (id) {
+                td.classList.add('clickable');
+                td.title = "Click to Select in Model";
+                td.onclick = function () { selectCircuit(id); };
+            }
+
+            tr.appendChild(td);
+        }
+
+        function selectCircuit(id) {
+            if (window.sketchup) {
+                window.location.href = 'skp:selectCircuit@' + id;
+            } else {
+                console.log("Select circuit: " + id);
+            }
+        }
+
+        function getRandomColor() {
+            // Generate a random dark color (HSL with limits)
+            // Hue: 0-360, Saturation: 70-100%, Lightness: 20-40% (Dark enough for white bg)
+            const h = Math.floor(Math.random() * 360);
+            const s = Math.floor(Math.random() * 30) + 70; // 70-100%
+            const l = Math.floor(Math.random() * 25) + 20; // 20-45%
+            return `hsl(${h}, ${s}%, ${l}%)`;
+        }
+
+        function calculateTotals(L, R) {
+            let tA = 0, tB = 0, tC = 0;
+            [...L, ...R].forEach(c => {
+                tA += numval(c.va_a);
+                tB += numval(c.va_b);
+                tC += numval(c.va_c);
+            });
+
+            const fmt = v => v > 0 ? v.toLocaleString() : '-';
+            document.getElementById('sumA_L').textContent = fmt(tA);
+            document.getElementById('sumB_L').textContent = fmt(tB);
+            document.getElementById('sumC_L').textContent = fmt(tC);
+            document.getElementById('sumA_R').textContent = fmt(tA);
+            document.getElementById('sumB_R').textContent = fmt(tB);
+            document.getElementById('sumC_R').textContent = fmt(tC);
+            document.getElementById('totalVA_A').textContent = fmt(tA);
+            document.getElementById('totalVA_B').textContent = fmt(tB);
+            document.getElementById('totalVA_C').textContent = fmt(tC);
+
+            const v1p = 220;
+            document.getElementById('currentA').value = tA > 0 ? (tA / v1p).toFixed(2) + ' A.' : '-';
+            document.getElementById('currentB').value = tB > 0 ? (tB / v1p).toFixed(2) + ' A.' : '-';
+            document.getElementById('currentC').value = tC > 0 ? (tC / v1p).toFixed(2) + ' A.' : '-';
+        }
+
+        function requestData() {
+            if (sketchup) {
+                sketchup.requestData();
+            } else {
+                // Sample data matching the reference image
+                populateTable([
+                    { circuit_no: 1, name: 'LIGHTNING+SIGNAGE', wire_size: 'L+N : 2-1/Cx2.5', wire_type: 'THW', conduit: '1/2" PVC', breaker_pole: 1, breaker_at: 15, va_a: 1355, va_b: '', va_c: '' },
+                    { circuit_no: 3, name: 'RECEPTACLE', wire_size: 'L+N : 2-1/Cx2.5\nG : 1-1/Cx2.5', wire_type: 'THW', conduit: '1/2" PVC', breaker_pole: 1, breaker_at: 15, va_a: '', va_b: 1360, va_c: '' },
+                    { circuit_no: 5, name: 'RECEPTACLE', wire_size: 'L+N : 2-1/Cx2.5\nG : 1-1/Cx2.5', wire_type: 'THW', conduit: '1/2" PVC', breaker_pole: 1, breaker_at: 15, va_a: '', va_b: '', va_c: 1530 },
+                    { circuit_no: 2, name: 'POWER PLUG', wire_size: 'L+N : 2-1/Cx2.5\nG : 1-1/Cx2.5', wire_type: 'THW', conduit: '3/4" PVC', breaker_pole: 3, breaker_at: 20, va_a: 2600, va_b: '', va_c: '' },
+                    { circuit_no: 4, name: 'CDU1 (24,000 BTU)', wire_size: 'L+N : 2-1/Cx6\nG : 1-1/Cx4', wire_type: 'THW', conduit: '3/4" PVC', breaker_pole: 1, breaker_at: 30, va_a: 3000, va_b: '', va_c: '' },
+                    { circuit_no: 6, name: 'CDU2 (24,000 BTU)', wire_size: 'L+N : 2-1/Cx6\nG : 1-1/Cx4', wire_type: 'THW', conduit: '3/4" PVC', breaker_pole: 1, breaker_at: 30, va_a: '', va_b: 3000, va_c: '' },
+                    { circuit_no: 8, name: 'CDU3 (24,000 BTU)', wire_size: 'L+N : 2-1/Cx6\nG : 1-1/Cx4', wire_type: 'THW', conduit: '3/4" PVC', breaker_pole: 1, breaker_at: 30, va_a: '', va_b: '', va_c: 3000 },
+                ]);
+            }
+        }
+
+        function exportToCSV() {
+            if (sketchup) sketchup.exportCSV();
+            else alert('Export CSV (ทดสอบ - ไม่ได้เชื่อมต่อ SketchUp)');
+        }
+
+        function autoFit() {
+            setTimeout(function () {
+                const table = document.getElementById('mainTable');
+                // Calculate height based on table and toolbar, plus a small buffer
+                const h = table.offsetHeight + 40 + 50; // 40 for toolbar + 20 buffer
+
+                if (window.sketchup) {
+                    sketchup.resizeDialog(window.innerWidth, h);
+                }
+            }, 300);
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            requestData();
+            autoFit();
+        });
+
+        // Periodically save dialog position so Ruby always has the latest
+        // Compute chromeHeight once to avoid fluctuation-induced Y drift
+        var _chromeHeight = 0;
+        setTimeout(function() {
+            _chromeHeight = window.outerHeight - window.innerHeight;
+        }, 300);
+        setInterval(function() {
+            var x = window.screenX;
+            var y = window.screenY - _chromeHeight;
+            if (x > 0 || y > 0) {
+                sketchup.savePosition(x, y);
+            }
+        }, 500);
+    </script>
+
+</body>
+
+</html>

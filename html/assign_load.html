@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assign Electrical Load</title>
+    <style>
+        :root {
+            --primary-color: #0078d7;
+            --bg-color: #f4f6f8;
+            --text-color: #333;
+            --card-bg: #fff;
+            --border-radius: 4px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            box-sizing: border-box;
+            font-size: 12px;
+        }
+
+        .container {
+            display: flex;
+            flex: 1;
+            gap: 6px;
+            min-height: 0;
+        }
+
+        /* Sidebar / Tabs */
+        .sidebar {
+            width: 120px;
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 6px 8px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 11px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s;
+            color: #555;
+        }
+
+        .tab-btn:hover {
+            background-color: #f7f9fa;
+            color: #000;
+        }
+
+        .tab-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Content Area */
+        .content {
+            flex: 1;
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 8px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .category-section {
+            display: none;
+        }
+
+        .category-section.active {
+            display: block;
+        }
+
+        h3 {
+            margin-top: 0;
+            margin-bottom: 6px;
+            font-size: 12px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 4px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 5px;
+        }
+
+        .item-card {
+            border: 1px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            padding: 4px 3px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            background: #fff;
+        }
+
+        .item-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .item-card.selected {
+            border-color: var(--primary-color);
+            background-color: #eff6fc;
+            box-shadow: 0 0 0 1px var(--primary-color) inset;
+        }
+
+        .item-icon {
+            font-size: 16px;
+            margin-bottom: 2px;
+            display: block;
+            line-height: 1;
+        }
+
+        .item-name {
+            font-size: 10px;
+            font-weight: 600;
+            margin-bottom: 1px;
+            display: block;
+            line-height: 1.1;
+        }
+
+        .item-load {
+            font-size: 9px;
+            color: #777;
+            display: block;
+            line-height: 1;
+        }
+
+        /* Footer / Action Bar */
+        .footer {
+            margin-top: 5px;
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 5px 8px;
+            box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .manual-input {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 10px;
+            color: #666;
+            margin-bottom: 1px;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            padding: 3px 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 11px;
+            width: 65px;
+        }
+
+        select {
+            padding: 3px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+
+        .btn {
+            padding: 4px 12px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 11px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0063b1;
+        }
+
+        .btn-secondary {
+            background-color: #eaeaea;
+            color: #333;
+            margin-right: 6px;
+        }
+
+        .btn-secondary:hover {
+            background-color: #dcdcdc;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <button class="tab-btn active" onclick="showTab('lighting')">Lighting</button>
+            <button class="tab-btn" onclick="showTab('receptacle')">Receptacles</button>
+            <button class="tab-btn" onclick="showTab('appliance')">Appliances</button>
+            <button class="tab-btn" onclick="showTab('ac')">Air Condition</button>
+            <button class="tab-btn" onclick="showTab('motor')">Motor/Pump</button>
+            <button class="tab-btn" onclick="showTab('ev')">EV Charger</button>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content">
+
+            <!-- Lighting Section -->
+            <div id="lighting" class="category-section active">
+                <h3>Lighting (โคมไฟแสงสว่าง)</h3>
+                <div class="grid">
+                    <div class="item-card" onclick="selectItem('LED Downlight', 9, 'Lighting (Residential)')">
+                        <span class="item-icon">💡</span>
+                        <span class="item-name">LED DL 9W</span>
+                        <span class="item-load">9 W</span>
+                    </div>
+                    <div class="item-card" onclick="selectItem('LED Downlight', 12, 'Lighting (Residential)')">
+                        <span class="item-icon">💡</span>
+                        <span class="item-name">LED DL 12W</span>
+                        <span class="item-load">12 W</span>
+                    </div>
+                    <div class="item-card" onclick="selectItem('LED Bulb', 9, 'Lighting (Residential)')">
+                        <span class="item-icon">💡</span>
+                        <span class="item-name">LED Bulb 9W</span>
+                        <span class="item-load">9 W</span>
+                    </div>
+                    <div class="item-card" onclick="selectItem('LED Tube T8', 18, 'Lighting (Residential)')">
+                        <span class="item-icon">🌭</span>
+                        <span class="item-name">LED T8 18W</span>
+                        <span class="item-load">18 W</span>
+                    </div>
+                    <div class="item-card" onclick="selectItem('Fluorescent 1x36W', 100, 'Lighting (Residential)')">
+                        <span class="item-icon">🌭</span>
+                        <span class="item-name">Fluor. 1x36W</span>
+                        <span class="item-load">~100 VA</span>
+                    </div>
+                    <div class="item-card" onclick="selectItem('Fluorescent 2x36W', 200, 'Lighting (Residential)')">
+                        <span class="item-icon">🌭</span>
+                        <span class="item-name">Fluor. 2x36W</span>
+                        <span class="item-load">~200 VA</span>
+                    </div>
+                    <div class="item-card" onclick="selectItem('Chandelier', 300, 'Lighting (Residential)')">
+                        <span class="item-icon">✨</span>
+                        <span class="item-name">Chandelier</span>
+                        <span class="item-load">300 W</span>
+                    </div>
+                    <div class="item-card" onclick="selectItem('Outdoor Light', 50, 'Lighting (Residential)')">
+                        <span class="item-icon">🌳</span>
+                        <span class="item-name">Garden Light</span>
+                        <span class="item-load">50 W</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Receptacle Section -->
+            <div id="receptacle" class="category-section">
+                <h3>Receptacles (เต้ารับ)</h3>
+                <div class="grid">
+                    <div class="item-card" onclick="selectItem('Duplex Receptacle', 180, 'Receptacles (General)')">
+                        <span class="item-icon">🔌</span>
+                        <span class="item-name">General</span>
+                        <span class="item-load">180 VA</span>
+                    </div>
+                    <div class="item-card" onclick="selectItem('Outdoor Receptacle', 180, 'Receptacles (General)')">
+                        <span class="item-icon">🔌</span>
+                        <span class="item-name">Outdoor (WP)</span>
+                        <span class="item-load">180 VA</span>
+                    </div>
+                    <div class="item-card" onclick="selectItem('Floor Receptacle', 180, 'Receptacles (General)')">
+                        <span class="item-icon">🔌</span>
+                        <span class="item-name">Floor Socket</span>
+                        <span class="item-load">180 VA</span>
+                    </div>
+                    <div class="item-card" onclick="selectItem('USB Outlet', 180, 'Receptacles (General)')">
+                        <span class="item-icon">📱</span>
+                        <span class="item-name">USB Outlet</span>
+                        <span class="item-load">180 VA</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Appliance Section -->
+            <div id="appliance" class="category-section">
+                <h3>Appliances (เครื่องใช้ไฟฟ้า)</h3>
+                <div class="grid">
+                    <div class="item-card" onclick="selectItem('Water Heater 3500W', 3500, 'General')">
+                        <span class="item-icon">🚿</span>
+                        <span class="item-name">Shower 3.5kW</span>
+                        <span class="item-load">3500 W</span>
+                    </div>
+                    <div class="item-card" onclick="selectItem('Water Heater 4500W', 4500, 'General')">
+                        <span class="item-icon">🚿</span>
+                        <span class="item-name">Shower 4.5kW</span>
+                        <span class="item-load">4500 W</span>
+                    </div>
+                    <div class="item-card" onclick="selectItem('Refrigerator', 500, 'General')">
+                        <span class="item-icon">❄️</span>
+                        <span class="item-name">Refrigerator</span>
+                        <span class="item-load">~500 VA</span>
+                    </div>
+                    <div class="item-card" onclick="selectItem('Microwave', 1200, 'General')">
+                        <span class="item-icon">♨️</span>
+                        <span class="item-name">Microwave</span>
+                        <span class="item-load">1200 VA</span>
+                    </div>
+                    <div class="item-card" onclick="selectItem('Washing Machine', 1500, 'Motor')">
+                        <span class="item-icon">🧺</span>
+                        <span class="item-name">Washing M/C</span>
+                        <span class="item-load">1500 VA</span>
+                    </div>
+                    <div class="item-card" onclick="selectItem('Electric Stove', 3000, 'General')">
+                        <span class="item-icon">🍳</span>
+                        <span class="item-name">Elec. Stove</span>
+                        <span class="item-load">3000 W</span>
+                    </div>
+                    <div class="item-card" onclick="selectItem('Oven', 2500, 'General')">
+                        <span class="item-icon">🍞</span>
+                        <span class="item-name">Oven</span>
+                        <span class="item-load">2500 W</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Air Condition Section -->
+            <div id="ac" class="category-section">
+                <h3>Air Condition (เครื่องปรับอากาศ)</h3>
+                <div class="grid">
+                    <div class="item-card" onclick="selectItem('AC 9000 BTU', 1000, 'Motor')">
+                        <span class="item-icon">❄️</span>
+                        <span class="item-name">9,000 BTU</span>
+                        <span class="item-load">~1000 VA</span>
+                    </div>
+                    <div class="item-card" onclick="selectItem('AC 12000 BTU', 1300, 'Motor')">
+                        <span class="item-icon">❄️</span>
+                        <span class="item-name">12,000 BTU</span>
+                        <span class="item-load">~1300 VA</span>
+                    </div>
+                    <div class="item-card" onclick="selectItem('AC 18000 BTU', 1900, 'Motor')">
+                        <span class="item-icon">❄️</span>
+                        <span class="item-name">18,000 BTU</span>
+                        <span class="item-load">~1900 VA</span>
+                    </div>
+                    <div class="item-card" onclick="selectItem('AC 24000 BTU', 2500, 'Motor')">
+                        <span class="item-icon">❄️</span>
+                        <span class="item-name">24,000 BTU</span>
+                        <span class="item-load">~2500 VA</span>
+                    </div>
+                    <div class="item-card" onclick="selectItem('AC 36000 BTU', 3800, 'Motor')">
+                        <span class="item-icon">❄️</span>
+                        <span class="item-name">36,000 BTU</span>
+                        <span class="item-load">~3800 VA</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Motor / Pump Section -->
+            <div id="motor" class="category-section">
+                <h3>Motor / Pump / Hood</h3>
+                <div class="grid">
+                    <div class="item-card" onclick="selectItem('Water Pump 250W', 400, 'Motor')">
+                        <span class="item-icon">🚰</span>
+                        <span class="item-name">Water Pump 250W</span>
+                        <span class="item-load">~400 VA</span>
+                    </div>
+                    <div class="item-card" onclick="selectItem('Water Pump 400W', 600, 'Motor')">
+                        <span class="item-icon">🚰</span>
+                        <span class="item-name">Water Pump 400W</span>
+                        <span class="item-load">~600 VA</span>
+                    </div>
+                    <div class="item-card" onclick="selectItem('Cooker Hood', 300, 'Motor')">
+                        <span class="item-icon">🍳</span>
+                        <span class="item-name">Cooker Hood</span>
+                        <span class="item-load">300 VA</span>
+                    </div>
+                    <div class="item-card" onclick="selectItem('Exhaust Fan', 100, 'Motor')">
+                        <span class="item-icon">💨</span>
+                        <span class="item-name">Exhaust Fan</span>
+                        <span class="item-load">100 VA</span>
+                    </div>
+                    <div class="item-card" onclick="selectItem('Auto Gate', 500, 'Motor')">
+                        <span class="item-icon">🚪</span>
+                        <span class="item-name">Auto Gate</span>
+                        <span class="item-load">500 VA</span>
+                    </div>
+                    <div class="item-card" onclick="selectItem('Pool Pump', 1500, 'Motor')">
+                        <span class="item-icon">🏊</span>
+                        <span class="item-name">Pool Pump</span>
+                        <span class="item-load">1500 VA</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EV Charger Section -->
+            <div id="ev" class="category-section">
+                <h3>EV Charger (รถยนต์ไฟฟ้า)</h3>
+                <div class="grid">
+                    <div class="item-card" onclick="selectItem('EV Charger 7kW', 7400, 'General')">
+                        <span class="item-icon">🚗</span>
+                        <span class="item-name">EV Charger 7kW</span>
+                        <span class="item-load">7.4 kVA (1P)</span>
+                    </div>
+                    <div class="item-card" onclick="selectItem('EV Charger 11kW', 11000, 'General')">
+                        <span class="item-icon">🚗</span>
+                        <span class="item-name">EV Charger 11kW</span>
+                        <span class="item-load">11 kVA (3P)</span>
+                    </div>
+                    <div class="item-card" onclick="selectItem('EV Charger 22kW', 22000, 'General')">
+                        <span class="item-icon">🚗</span>
+                        <span class="item-name">EV Charger 22kW</span>
+                        <span class="item-load">22 kVA (3P)</span>
+                    </div>
+                    <div class="item-card" onclick="selectItem('Emergency Charger', 3500, 'General')">
+                        <span class="item-icon">🔌</span>
+                        <span class="item-name">Emergency Port</span>
+                        <span class="item-load">3.5 kVA</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Footer Action -->
+    <div class="footer">
+        <div class="manual-input">
+            <div class="input-group">
+                <label>Watts/VA</label>
+                <input type="number" id="inputWatts" value="100" />
+            </div>
+            <div class="input-group">
+                <label>Load Type</label>
+                <!-- Types match the keys in StandardsDatabase defined in Ruby -->
+                <select id="inputType">
+                    <option value="Lighting (Residential)">Lighting (Residential)</option>
+                    <option value="Receptacles (General)">Receptacles (General)</option>
+                    <option value="Motor">Motor / AC</option>
+                    <option value="General">General / Appliances</option>
+                </select>
+            </div>
+        </div>
+        <div>
+            <button class="btn btn-secondary" onclick="closeDialog()">Cancel</button>
+            <button class="btn btn-primary" onclick="applyLoad()">Apply to Selection</button>
+        </div>
+    </div>
+
+    <script>
+        // Tab function
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.category-section').forEach(el => el.classList.remove('active'));
+
+            // Activate current
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // Selection function
+        function selectItem(name, watts, type) {
+            // Update input fields
+            document.getElementById('inputWatts').value = watts;
+
+            // Select type in dropdown
+            const typeSelect = document.getElementById('inputType');
+            // Try to approximate type if exact match not found
+            let found = false;
+            for (let i = 0; i < typeSelect.options.length; i++) {
+                if (typeSelect.options[i].value === type) {
+                    typeSelect.selectedIndex = i;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) typeSelect.selectedIndex = 3; // Default to General
+
+            // Visual feedback
+            document.querySelectorAll('.item-card').forEach(c => c.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+        }
+
+        // Action functions
+        function applyLoad() {
+            const watts = parseFloat(document.getElementById('inputWatts').value);
+            const loadType = document.getElementById('inputType').value;
+
+            if (isNaN(watts)) {
+                alert("Please enter a valid Watts value.");
+                return;
+            }
+
+            // Send to SketchUp
+            sketchup.applyLoad(watts, loadType);
+        }
+
+        function closeDialog() {
+            sketchup.closeDialog();
+        }
+
+        // Periodically save dialog position so Ruby always has the latest
+        // Compensate for title bar: screenY reports content top, set_position expects frame top
+        // Compute chromeHeight once to avoid fluctuation-induced Y drift
+        var _chromeHeight = 0;
+        setTimeout(function() {
+            _chromeHeight = window.outerHeight - window.innerHeight;
+        }, 300);
+        setInterval(function() {
+            var x = window.screenX;
+            var y = window.screenY - _chromeHeight;
+            if (x > 0 || y > 0) {
+                sketchup.savePosition(x, y);
+            }
+        }, 500);
+
+    </script>
+</body>
+
+</html>

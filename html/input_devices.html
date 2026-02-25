@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Devices & Wirings</title>
+    <style>
+        :root {
+            /* Light Theme & Compact Variables */
+            --primary: #0078d7;
+            --primary-hover: #005fa3;
+            --accent: #27ae60;
+            --accent-hover: #219150;
+            --bg: #ffffff;
+            --surface: #f7f7f7;
+            --surface-hover: #e0e0e0;
+            --text: #333333;
+            --text-muted: #666666;
+            --border: #dddddd;
+            --danger: #e74c3c;
+            --radius: 4px;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 8px;
+            font-size: 12px;
+            overflow-y: auto;
+        }
+
+        /* ===== Panel ===== */
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 10px;
+            background: linear-gradient(135deg, var(--primary), #005fa3);
+            color: #fff;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .panel-header h2 {
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .panel-header .icon {
+            font-size: 14px;
+        }
+
+        .panel-toggle {
+            font-size: 14px;
+            transition: transform 0.3s;
+        }
+
+        .panel-toggle.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .panel-body {
+            padding: 10px;
+            transition: max-height 0.3s ease;
+        }
+
+        .panel-body.collapsed {
+            display: none;
+        }
+
+        /* ===== Filter Buttons ===== */
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .filter-btn {
+            padding: 4px 8px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: #fff;
+            color: var(--text-muted);
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(0, 120, 215, 0.05);
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        /* ===== Select / Dropdown ===== */
+        .form-group {
+            margin-bottom: 8px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        select {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: #fff;
+            color: var(--text);
+            font-size: 12px;
+            font-family: inherit;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        select:hover {
+            border-color: var(--primary);
+        }
+
+        select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 120, 215, 0.1);
+        }
+
+        /* ===== Info Box ===== */
+        .info-box {
+            display: flex;
+            gap: 10px;
+            padding: 8px 10px;
+            background: rgba(0, 120, 215, 0.05);
+            border: 1px solid #e1e1e8;
+            border-radius: var(--radius);
+            border-left: 3px solid var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .info-label {
+            font-size: 9px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* ===== Buttons ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 12px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #005fa3);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-hover), #004d8a);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(0, 120, 215, 0.2);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-accent {
+            background: linear-gradient(135deg, var(--accent), #219150);
+            color: #fff;
+        }
+
+        .btn-accent:hover {
+            background: linear-gradient(135deg, var(--accent-hover), #1e8248);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(39, 174, 96, 0.2);
+        }
+
+        .btn-accent:active {
+            transform: translateY(0);
+        }
+
+        .btn-wall {
+            background: linear-gradient(135deg, #e67e22, #d35400);
+            color: #fff;
+        }
+
+        .btn-wall:hover {
+            background: linear-gradient(135deg, #d35400, #c0392b);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(230, 126, 34, 0.2);
+        }
+
+        .btn-wall:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+            background: #ccc !important;
+            color: #666 !important;
+        }
+
+        /* ===== Status Bar ===== */
+        .status-bar {
+            margin-top: 6px;
+            padding: 6px 10px;
+            background: #f0f0f0;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        .status-bar.error .status-dot {
+            background: var(--danger);
+            animation: none;
+        }
+
+        .status-bar.success .status-dot {
+            background: var(--accent);
+            animation: none;
+        }
+
+        /* ===== Divider ===== */
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 4px 0 8px;
+        }
+
+        /* ===== Device Preview ===== */
+        .preview-container {
+            display: none;
+            text-align: center;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: #f0f0f0;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+
+        .preview-container img {
+            max-width: 100%;
+            max-height: 135px;
+            display: block;
+            margin: 0 auto;
+            border-radius: var(--radius);
+            background: #ffffff;
+            image-rendering: auto;
+        }
+
+        .preview-error {
+            font-size: 11px;
+            color: var(--text-muted);
+            padding: 20px 0;
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .preview-view-btns {
+            display: flex;
+            gap: 2px;
+        }
+
+        .view-btn {
+            padding: 2px 8px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: #fff;
+            color: var(--text-muted);
+            font-size: 9px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 0.5px;
+        }
+
+        .view-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .view-btn.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        /* ===== Offset Row ===== */
+        .offset-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 8px;
+            align-items: flex-end;
+        }
+
+        .offset-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .offset-group label {
+            font-size: 9px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .offset-group input {
+            width: 100%;
+            padding: 4px 6px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: #fff;
+            color: var(--text);
+            font-size: 11px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            text-align: right;
+            transition: border-color 0.2s;
+        }
+
+        .offset-group input:hover {
+            border-color: var(--primary);
+        }
+
+        .offset-group input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 120, 215, 0.1);
+        }
+
+        .offset-group.ox label { color: #cc3333; }
+        .offset-group.oy label { color: #33aa33; }
+        .offset-group.oz label { color: #3366cc; }
+
+        .btn-reset-offset {
+            padding: 4px 8px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: #fff;
+            color: var(--text-muted);
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            min-width: 32px;
+            text-align: center;
+        }
+
+        .btn-reset-offset:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+            background: rgba(231, 76, 60, 0.05);
+        }
+
+        /* ===== Label Row with Right Button ===== */
+        .label-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2px;
+        }
+
+        .label-row label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 0;
+        }
+
+        .btn-cycle-toggle {
+            padding: 2px 10px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: #fff;
+            color: var(--text-muted);
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-cycle-toggle:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(0, 120, 215, 0.05);
+        }
+
+        .btn-cycle-toggle.mode-all {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        .btn-cycle-toggle.mode-3d {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+
+        .btn-cycle-toggle.mode-2d {
+            background: #e67e22;
+            color: #fff;
+            border-color: #e67e22;
+        }
+
+        /* ===== Custom Device Section ===== */
+        .custom-device-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 8px;
+            align-items: flex-end;
+        }
+
+        .custom-device-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .custom-device-row input[type="text"] {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: #fff;
+            color: var(--text);
+            font-size: 12px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .custom-device-row input[type="text"]:hover {
+            border-color: var(--primary);
+        }
+
+        .custom-device-row input[type="text"]:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 120, 215, 0.1);
+        }
+
+        .btn-apply-custom {
+            padding: 6px 14px;
+            border: none;
+            border-radius: var(--radius);
+            background: linear-gradient(135deg, #8e44ad, #6c3483);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-apply-custom:hover {
+            background: linear-gradient(135deg, #7d3c98, #5b2c6f);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(142, 68, 173, 0.3);
+        }
+
+        .btn-apply-custom:active {
+            transform: translateY(0);
+        }
+
+        .btn-apply-custom:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+            background: #ccc !important;
+            color: #666 !important;
+        }
+
+        /* ===== Custom Wiring Section ===== */
+        .custom-wiring-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 8px;
+            align-items: flex-end;
+        }
+
+        .custom-wiring-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .custom-wiring-row input[type="text"] {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: #fff;
+            color: var(--text);
+            font-size: 12px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .custom-wiring-row input[type="text"]:hover {
+            border-color: var(--accent);
+        }
+
+        .custom-wiring-row input[type="text"]:focus {
+            border-color: var(--accent);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(39, 174, 96, 0.1);
+        }
+
+        .btn-apply-custom-wire {
+            padding: 6px 14px;
+            border: none;
+            border-radius: var(--radius);
+            background: linear-gradient(135deg, var(--accent), #219150);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-apply-custom-wire:hover {
+            background: linear-gradient(135deg, var(--accent-hover), #1e8248);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(39, 174, 96, 0.3);
+        }
+
+        .btn-apply-custom-wire:active {
+            transform: translateY(0);
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <!-- ===== DEVICES PANEL ===== -->
+    <div class="panel">
+        <div class="panel-header" onclick="togglePanel('devices')">
+            <h2><span class="icon">⚡</span> Devices</h2>
+            <span class="panel-toggle" id="toggle-devices">▼</span>
+        </div>
+        <div class="panel-body" id="panel-devices">
+            <!-- Custom Device Name + Apply -->
+            <div class="custom-device-row">
+                <div class="form-group">
+                    <label>Custom Device</label>
+                    <input type="text" id="custom-device-name" placeholder="Select Group/Component, then type name" />
+                </div>
+                <button class="btn-apply-custom" id="btn-apply-custom" onclick="applyCustomDevice()">
+                    Apply
+                </button>
+            </div>
+
+            <!-- Filter Buttons -->
+            <div class="filter-bar" id="filter-bar">
+                <!-- Populated by JS -->
+            </div>
+
+            <!-- Device Selector -->
+            <div class="form-group">
+                <div class="label-row">
+                    <label>Select Device</label>
+                    <button class="btn-cycle-toggle mode-all" id="btn-cycle-toggle" onclick="cycleTagView()" title="Toggle Tags: All / 3D / 2D">👁 All</button>
+                </div>
+                <select id="selectDevice">
+                    <option value="">-- Select Device --</option>
+                </select>
+            </div>
+
+            <!-- Device Thumbnail Preview -->
+            <div class="preview-container" id="preview-container">
+                <div class="preview-header">
+                    <div class="preview-label">PREVIEW</div>
+                    <div class="preview-view-btns">
+                        <button class="view-btn active" id="btn-view-iso" onclick="setPreviewView('iso')">ISO</button>
+                        <button class="view-btn" id="btn-view-top" onclick="setPreviewView('top')">TOP</button>
+                    </div>
+                </div>
+                <img id="device-preview" src="" alt="Preview" />
+                <div class="preview-error" id="preview-error" style="display:none;">Preview not available</div>
+            </div>
+
+            <!-- Offset Inputs -->
+            <div class="form-group">
+                <label>OFFSET FROM COMPONENT AXIS</label>
+                <div class="offset-row">
+                    <div class="offset-group ox">
+                        <label>X</label>
+                        <input type="text" id="offset-x" value="0" placeholder="0" />
+                    </div>
+                    <div class="offset-group oy">
+                        <label>Y</label>
+                        <input type="text" id="offset-y" value="0" placeholder="0" />
+                    </div>
+                    <div class="offset-group oz">
+                        <label>Z</label>
+                        <input type="text" id="offset-z" value="0" placeholder="0" />
+                    </div>
+                    <button class="btn-reset-offset" onclick="resetOffset()" title="Reset Offset to 0,0,0">✕</button>
+                </div>
+            </div>
+
+            <!-- Place Button -->
+            <button class="btn btn-primary" id="btn-place-device" onclick="placeDevice()" disabled>
+                📌 Place Device-Click to place
+            </button>
+
+            <!-- Place on Wall Button -->
+            <button class="btn btn-wall" id="btn-place-on-wall" onclick="placeDeviceOnWall()" disabled style="margin-top:6px;">
+                🧱 Place Device with Ref_Point
+            </button>
+        </div>
+    </div>
+
+
+    <!-- ===== WIRINGS PANEL ===== -->
+    <div class="panel">
+        <div class="panel-header" onclick="togglePanel('wirings')">
+            <h2><span class="icon">🔌</span> Wirings</h2>
+            <span class="panel-toggle" id="toggle-wirings">▼</span>
+        </div>
+        <div class="panel-body" id="panel-wirings">
+            <!-- Custom Wiring Name + Apply -->
+            <div class="custom-wiring-row">
+                <div class="form-group">
+                    <label>Custom Wiring</label>
+                    <input type="text" id="custom-wire-name" placeholder="e.g. 2x6mm² XLPE/CT20" />
+                </div>
+                <button class="btn-apply-custom-wire" id="btn-apply-custom-wire" onclick="applyCustomWiring()">
+                    Apply
+                </button>
+            </div>
+
+            <!-- Wire Selector -->
+            <div class="form-group">
+                <label>Select Wire Type</label>
+                <select id="selectWire">
+                    <option value="">-- Select Wire --</option>
+                </select>
+            </div>
+
+            <!-- Select Wire Button -->
+            <button class="btn btn-accent" id="btn-select-wire" onclick="selectWire()" disabled>
+                🔗 Draw Wiring-Arc
+            </button>
+        </div>
+    </div>
+
+    <!-- ===== STATUS BAR ===== -->
+    <div class="status-bar" id="status-bar">
+        <span class="status-dot"></span>
+        <span id="status-text">Ready — Please select a device or wire</span>
+    </div>
+
+    <script>
+        // =============================================
+        // DATA — populated by Ruby callbacks
+        // =============================================
+        let devicesData = [];
+        let wiresData = [];
+        let connectionTypes = {};
+        let currentFilter = 'all';
+        let selectedDeviceIndex = -1;
+        let selectedWireIndex = -1;
+        let _isRestoring = false;
+        let _pendingRestore = null;
+        let currentPreviewView = 'iso';
+        let currentTagViewMode = 'all'; // 'all' | '3d' | '2d'
+
+        // =============================================
+        // INITIALIZATION
+        // =============================================
+        document.addEventListener('DOMContentLoaded', function () {
+            // Request data from Ruby
+            sketchup.getDevicesData();
+            sketchup.getWiresData();
+            sketchup.getConnectionTypes();
+            sketchup.getLastSelection();
+            sketchup.getOffset();
+        });
+
+        // =============================================
+        // CALLBACKS FROM RUBY
+        // =============================================
+        function onDevicesDataReceived(jsonStr) {
+            devicesData = JSON.parse(jsonStr);
+            renderFilterButtons();
+            renderDevices();
+            tryRestoreSelection();
+            autoFit();
+        }
+
+        function onWiresDataReceived(jsonStr) {
+            wiresData = JSON.parse(jsonStr);
+            renderWires();
+            tryRestoreSelection();
+            autoFit();
+        }
+
+        function onConnectionTypesReceived(jsonStr) {
+            connectionTypes = JSON.parse(jsonStr);
+            renderFilterButtons();
+        }
+
+        // Called by Ruby with last saved device/wire selection
+        function onLastSelectionReceived(deviceIdx, wireIdx) {
+            _pendingRestore = { deviceIdx: deviceIdx, wireIdx: wireIdx };
+            tryRestoreSelection();
+        }
+
+        // Shared restore function — works regardless of callback order
+        function tryRestoreSelection() {
+            if (!_pendingRestore) return;
+            // Restore device if data loaded and not yet restored
+            if (devicesData.length > 0 && _pendingRestore.deviceIdx >= 0
+                && _pendingRestore.deviceIdx < devicesData.length && selectedDeviceIndex < 0) {
+                _isRestoring = true;
+                var sel = document.getElementById('selectDevice');
+                sel.value = _pendingRestore.deviceIdx;
+                sel.dispatchEvent(new Event('change'));
+                _isRestoring = false;
+            }
+            // Restore wire if data loaded and not yet restored
+            if (wiresData.length > 0 && _pendingRestore.wireIdx >= 0
+                && _pendingRestore.wireIdx < wiresData.length && selectedWireIndex < 0) {
+                var sel = document.getElementById('selectWire');
+                sel.value = _pendingRestore.wireIdx;
+                sel.dispatchEvent(new Event('change'));
+            }
+        }
+
+        function onDevicePlaced(deviceLabel) {
+            setStatus('success', 'Placed "' + deviceLabel + '" — Click to place more, Esc to stop');
+        }
+
+        function onDevicePlacedOnWall(deviceLabel) {
+            setStatus('success', 'Placed "' + deviceLabel + '" on wall — Click next ref point, Esc to stop');
+        }
+
+        function onDevicePlaceError(msg) {
+            setStatus('error', 'Error: ' + msg);
+        }
+
+        function onWireSelected(wireLabel) {
+            setStatus('success', 'Draw wire "' + wireLabel + '" — Click start point, Space=End/Group');
+        }
+
+        function onWireArcDrawn(wireLabel, count) {
+            setStatus('success', 'Arc #' + count + ' ("' + wireLabel + '") — Click next point, Space=End/Group');
+        }
+
+        function onWiringGrouped(wireLabel, count) {
+            setStatus('success', 'Grouped "' + wireLabel + '" (' + count + ' arcs) — Tag assigned');
+        }
+
+        function onPreviewReceived(dataUri) {
+            var img = document.getElementById('device-preview');
+            var container = document.getElementById('preview-container');
+            var errorEl = document.getElementById('preview-error');
+            img.src = dataUri;
+            img.style.display = 'block';
+            errorEl.style.display = 'none';
+            container.style.display = 'block';
+            autoFit();
+        }
+
+        function onPreviewError(msg) {
+            var container = document.getElementById('preview-container');
+            var img = document.getElementById('device-preview');
+            var errorEl = document.getElementById('preview-error');
+            img.style.display = 'none';
+            errorEl.style.display = 'block';
+            container.style.display = 'block';
+            autoFit();
+        }
+
+        // Called by Ruby when offset values are loaded or changed by Tool
+        function onOffsetReceived(ox, oy, oz) {
+            document.getElementById('offset-x').value = ox || '0';
+            document.getElementById('offset-y').value = oy || '0';
+            document.getElementById('offset-z').value = oz || '0';
+        }
+
+        // Called by PlaceDeviceTool when offset changes via VCB
+        function onOffsetChanged(ox, oy, oz) {
+            document.getElementById('offset-x').value = ox || '0';
+            document.getElementById('offset-y').value = oy || '0';
+            document.getElementById('offset-z').value = oz || '0';
+        }
+
+        // Called by Ruby after applyCustomDevice succeeds
+        function onCustomDeviceApplied(jsonStr) {
+            // jsonStr = JSON encoded [label, skp_file, connection_type]
+            var newDevice = JSON.parse(jsonStr);
+            devicesData.push(newDevice);
+            renderDevices();
+            // Auto-select the newly added device
+            var newIdx = devicesData.length - 1;
+            var sel = document.getElementById('selectDevice');
+            sel.value = newIdx;
+            sel.dispatchEvent(new Event('change'));
+            setStatus('success', 'Custom Device "' + newDevice[0] + '" created — Ready to Place');
+            autoFit();
+        }
+
+        // Called by Ruby with preview of custom device — reuse same preview container
+        function onCustomDevicePreview(dataUri) {
+            var img = document.getElementById('device-preview');
+            var container = document.getElementById('preview-container');
+            var errorEl = document.getElementById('preview-error');
+            img.src = dataUri;
+            img.style.display = 'block';
+            errorEl.style.display = 'none';
+            container.style.display = 'block';
+            autoFit();
+        }
+
+        // Called by Ruby on custom device error
+        function onCustomDeviceError(msg) {
+            setStatus('error', 'Custom Device Error: ' + msg);
+        }
+
+        // Called by Ruby after applyCustomWiring succeeds
+        function onCustomWiringApplied(jsonStr) {
+            // jsonStr = JSON encoded [label, nb_wires, section]
+            var newWire = JSON.parse(jsonStr);
+            wiresData.push(newWire);
+            renderWires();
+            // Auto-select the newly added wire
+            var newIdx = wiresData.length - 1;
+            var sel = document.getElementById('selectWire');
+            sel.value = newIdx;
+            sel.dispatchEvent(new Event('change'));
+            setStatus('success', 'Custom Wiring "' + newWire[0] + '" added — Ready to Draw');
+            autoFit();
+        }
+
+        // Called by Ruby on custom wiring error
+        function onCustomWiringError(msg) {
+            setStatus('error', 'Custom Wiring Error: ' + msg);
+        }
+
+        // =============================================
+        // RENDER FUNCTIONS
+        // =============================================
+        function renderFilterButtons() {
+            const bar = document.getElementById('filter-bar');
+            bar.innerHTML = '';
+
+            const types = Object.keys(connectionTypes).length > 0
+                ? connectionTypes
+                : { 'all': 'All' };
+
+            for (const [key, label] of Object.entries(types)) {
+                const btn = document.createElement('button');
+                btn.className = 'filter-btn' + (key === currentFilter ? ' active' : '');
+                btn.textContent = label;
+                btn.onclick = function () { filterDevices(key); };
+                bar.appendChild(btn);
+            }
+        }
+
+        function renderDevices() {
+            const select = document.getElementById('selectDevice');
+            select.innerHTML = '<option value="">-- Select Device --</option>';
+
+            devicesData.forEach(function (device, idx) {
+                if (currentFilter === 'all' || device[2] === currentFilter) {
+                    const opt = document.createElement('option');
+                    opt.value = idx;
+                    opt.textContent = device[0];
+                    select.appendChild(opt);
+                }
+            });
+
+            // Reset selection
+            selectedDeviceIndex = -1;
+            document.getElementById('btn-place-device').disabled = true;
+            document.getElementById('btn-place-on-wall').disabled = true;
+        }
+
+        function renderWires() {
+            const select = document.getElementById('selectWire');
+            select.innerHTML = '<option value="">-- Select Wire --</option>';
+
+            wiresData.forEach(function (wire, idx) {
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.textContent = wire[0];
+                select.appendChild(opt);
+            });
+        }
+
+        // =============================================
+        // EVENT HANDLERS
+        // =============================================
+        function filterDevices(type) {
+            currentFilter = type;
+            // Update button states
+            document.querySelectorAll('.filter-btn').forEach(function (btn, i) {
+                const keys = Object.keys(connectionTypes);
+                btn.className = 'filter-btn' + (keys[i] === type ? ' active' : '');
+            });
+            renderDevices();
+            autoFit();
+        }
+
+        // Offset inputs: debounced live update for real-time preview
+        var _offsetTimer = null;
+        ['offset-x', 'offset-y', 'offset-z'].forEach(function(id) {
+            document.getElementById(id).addEventListener('input', function() {
+                if (_offsetTimer) clearTimeout(_offsetTimer);
+                _offsetTimer = setTimeout(function() {
+                    sendOffsetLiveToRuby();
+                }, 500);
+            });
+        });
+
+        document.getElementById('selectDevice').addEventListener('change', function () {
+            const val = this.value;
+            if (val === '') {
+                selectedDeviceIndex = -1;
+                document.getElementById('btn-place-device').disabled = true;
+                document.getElementById('btn-place-on-wall').disabled = true;
+                document.getElementById('preview-container').style.display = 'none';
+                return;
+            }
+            selectedDeviceIndex = parseInt(val);
+            // Reset offset only when user manually selects a new component (not restoring)
+            if (!_isRestoring) {
+                resetOffset();
+            }
+            // Save selection to Ruby for persistence
+            sketchup.saveLastSelection(selectedDeviceIndex, selectedWireIndex);
+            const device = devicesData[selectedDeviceIndex];
+            document.getElementById('btn-place-device').disabled = false;
+            document.getElementById('btn-place-on-wall').disabled = false;
+            // Request thumbnail preview from Ruby
+            sketchup.getDevicePreview(selectedDeviceIndex, currentPreviewView);
+            autoFit();
+        });
+
+        document.getElementById('selectWire').addEventListener('change', function () {
+            const val = this.value;
+            if (val === '') {
+                selectedWireIndex = -1;
+                document.getElementById('btn-select-wire').disabled = true;
+                return;
+            }
+            selectedWireIndex = parseInt(val);
+            // Save selection to Ruby for persistence
+            sketchup.saveLastSelection(selectedDeviceIndex, selectedWireIndex);
+            document.getElementById('btn-select-wire').disabled = false;
+            autoFit();
+        });
+
+        // =============================================
+        // TAG VIEW CYCLE: All / 3D / 2D
+        // =============================================
+        function cycleTagView() {
+            var modes = ['all', '3d', '2d'];
+            var labels = { 'all': '👁 All', '3d': '👁 3D', '2d': '👁 2D' };
+            var classes = { 'all': 'mode-all', '3d': 'mode-3d', '2d': 'mode-2d' };
+            var idx = modes.indexOf(currentTagViewMode);
+            idx = (idx + 1) % modes.length;
+            currentTagViewMode = modes[idx];
+            var btn = document.getElementById('btn-cycle-toggle');
+            btn.textContent = labels[currentTagViewMode];
+            btn.className = 'btn-cycle-toggle ' + classes[currentTagViewMode];
+            sketchup.setTagViewMode(currentTagViewMode);
+        }
+
+        function setPreviewView(viewType) {
+            currentPreviewView = viewType;
+            document.getElementById('btn-view-iso').className = 'view-btn' + (viewType === 'iso' ? ' active' : '');
+            document.getElementById('btn-view-top').className = 'view-btn' + (viewType === 'top' ? ' active' : '');
+            if (selectedDeviceIndex >= 0) {
+                sketchup.getDevicePreview(selectedDeviceIndex, currentPreviewView);
+            }
+        }
+
+        // =============================================
+        // ACTIONS
+        // =============================================
+        function placeDevice() {
+            if (selectedDeviceIndex < 0) return;
+            // Save offset values from HTML inputs to Ruby before placing
+            sendOffsetToRuby();
+            setStatus('', 'Place mode — Click to place, Ctrl=Offset(X,Y,Z), Shift=Rotate, Esc=Cancel');
+            sketchup.placeDevice(selectedDeviceIndex);
+        }
+
+        function placeDeviceOnWall() {
+            if (selectedDeviceIndex < 0) return;
+            setStatus('', 'Wall mode — 1.Click wall face 2.Click ref point 3.Set horizontal+VCB 4.Set vertical+VCB');
+            sketchup.placeDeviceOnWall(selectedDeviceIndex);
+        }
+
+        function applyCustomDevice() {
+            var nameInput = document.getElementById('custom-device-name');
+            var deviceName = nameInput.value.trim();
+            if (!deviceName) {
+                setStatus('error', 'Please enter a device name before clicking Apply');
+                return;
+            }
+            setStatus('', 'Creating Custom Device "' + deviceName + '"...');
+            sketchup.applyCustomDevice(deviceName);
+        }
+
+        function applyCustomWiring() {
+            var nameInput = document.getElementById('custom-wire-name');
+            var wireName = nameInput.value.trim();
+            var cores = '2';
+            var section = '1.5';
+            if (!wireName) {
+                setStatus('error', 'Please enter a wiring name before clicking Apply');
+                return;
+            }
+            setStatus('', 'Adding Custom Wiring "' + wireName + '"...');
+            sketchup.applyCustomWiring(wireName, cores, section);
+        }
+
+        function sendOffsetToRuby() {
+            var ox = document.getElementById('offset-x').value || '0';
+            var oy = document.getElementById('offset-y').value || '0';
+            var oz = document.getElementById('offset-z').value || '0';
+            sketchup.setOffset(ox, oy, oz);
+        }
+
+        // Live update: sends to Ruby without getting formatted values back (avoids overwriting user input)
+        function sendOffsetLiveToRuby() {
+            var ox = document.getElementById('offset-x').value || '0';
+            var oy = document.getElementById('offset-y').value || '0';
+            var oz = document.getElementById('offset-z').value || '0';
+            sketchup.setOffsetLive(ox, oy, oz);
+        }
+
+        function resetOffset() {
+            document.getElementById('offset-x').value = '0';
+            document.getElementById('offset-y').value = '0';
+            document.getElementById('offset-z').value = '0';
+            sketchup.setOffset('0', '0', '0');
+        }
+
+        function selectWire() {
+            if (selectedWireIndex < 0) return;
+            setStatus('', 'Draw wire mode — Click 2 points for Arc, Space=End/Group, Esc=Cancel');
+            sketchup.selectWire(selectedWireIndex);
+        }
+
+        // =============================================
+        // UI HELPERS
+        // =============================================
+        function togglePanel(id) {
+            const body = document.getElementById('panel-' + id);
+            const toggle = document.getElementById('toggle-' + id);
+            body.classList.toggle('collapsed');
+            toggle.classList.toggle('collapsed');
+
+            // Trigger auto-fit when panel state changes
+            autoFit();
+        }
+
+        function setStatus(type, message) {
+            const bar = document.getElementById('status-bar');
+            const text = document.getElementById('status-text');
+            bar.className = 'status-bar' + (type ? ' ' + type : '');
+            text.textContent = message;
+        }
+
+        // =============================================
+        // AUTO FIT DIALOG
+        // =============================================
+        function autoFit() {
+            // Include a small timeout to allow CSS transitions or DOM updates to finish
+            setTimeout(function () {
+                // Use scrollHeight of body only — allows dialog to shrink on collapse
+                var height = document.body.scrollHeight;
+
+                // Send only height to Ruby — width stays fixed
+                sketchup.resizeDialog(height);
+            }, 100);
+        }
+
+
+    </script>
+</body>
+
+</html>

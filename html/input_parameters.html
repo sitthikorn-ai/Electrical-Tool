@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circuit Parameters</title>
+    <style>
+        :root {
+            --primary-color: #0078d4;
+            --bg-color: #f3f2f1;
+            --card-bg: #ffffff;
+            --text-color: #323130;
+            --input-border: #8a8886;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 12px 16px;
+            /* Compact padding */
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            font-size: 13px;
+            /* Match SketchUp inputbox feel */
+        }
+
+        .form-group {
+            display: grid;
+            grid-template-columns: 95px 1fr;
+            align-items: center;
+            gap: 8px;
+        }
+
+        label {
+            font-weight: normal;
+            text-align: left;
+            color: #333;
+        }
+
+        input,
+        select {
+            padding: 4px 8px;
+            border: 1px solid var(--input-border);
+            border-radius: 2px;
+            font-family: inherit;
+            font-size: 13px;
+            width: 100%;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--primary-color);
+            border-width: 2px;
+            padding: 3px 7px;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 4px;
+            padding-top: 8px;
+            border-top: 1px solid #e1dfdd;
+        }
+
+        button {
+            padding: 6px 24px;
+            border-radius: 2px;
+            font-size: 13px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            min-width: 80px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: #006cbe;
+        }
+
+        .btn-default {
+            background-color: #ffffff;
+            color: #333;
+            border-color: #8a8886;
+        }
+
+        .btn-default:hover {
+            background-color: #edebe9;
+        }
+
+        /* Autocomplete */
+        .autocomplete-wrap {
+            position: relative;
+        }
+
+        .autocomplete-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border: 1px solid var(--input-border);
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            max-height: 120px;
+            overflow-y: auto;
+            z-index: 10;
+            display: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+        }
+
+        .autocomplete-list.show {
+            display: block;
+        }
+
+        .autocomplete-item {
+            padding: 4px 8px;
+            font-size: 13px;
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .autocomplete-item:hover,
+        .autocomplete-item.active {
+            background-color: #e1f0ff;
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="form-group">
+        <label for="name">ชื่อวงจร:</label>
+        <div class="autocomplete-wrap">
+            <input type="text" id="name" value="LP-1" autocomplete="off">
+            <div id="acList" class="autocomplete-list"></div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="voltage">แรงดัน (V):</label>
+        <input type="number" id="voltage" value="230.0" step="1">
+    </div>
+
+    <div class="form-group">
+        <label for="phases">เฟส (1 หรือ 3):</label>
+        <select id="phases">
+            <option value="1">1 Phase</option>
+            <option value="3">3 Phase</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="pf">Power Factor:</label>
+        <input type="number" id="pf" value="0.9" step="0.1" max="1.0" min="0.1">
+    </div>
+
+    <div class="actions">
+        <button class="btn-default" onclick="cancel()">Cancel</button>
+        <button class="btn-primary" onclick="submit()">OK</button>
+    </div>
+
+    <script>
+        let existingNames = [];
+        let acIndex = -1;
+
+        function setValues(vals) {
+            if (!vals) return;
+            if (vals[0] !== undefined) document.getElementById('name').value = vals[0];
+            if (vals[1] !== undefined) document.getElementById('voltage').value = vals[1];
+            if (vals[2] !== undefined) document.getElementById('phases').value = vals[2];
+            if (vals[3] !== undefined) document.getElementById('pf').value = vals[3];
+        }
+
+        function setExistingNames(names) {
+            existingNames = names || [];
+        }
+
+        function showAC(filter) {
+            const list = document.getElementById('acList');
+            list.innerHTML = '';
+            acIndex = -1;
+            if (!filter || existingNames.length === 0) { list.classList.remove('show'); return; }
+            const lower = filter.toLowerCase();
+            const matched = existingNames.filter(n => n.toLowerCase().includes(lower) && n.toLowerCase() !== lower);
+            if (matched.length === 0) { list.classList.remove('show'); return; }
+            matched.forEach((name, i) => {
+                const div = document.createElement('div');
+                div.className = 'autocomplete-item';
+                div.textContent = name;
+                div.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    document.getElementById('name').value = name;
+                    list.classList.remove('show');
+                });
+                list.appendChild(div);
+            });
+            list.classList.add('show');
+        }
+
+        (function initAC() {
+            const inp = document.getElementById('name');
+            const list = document.getElementById('acList');
+
+            inp.addEventListener('input', () => showAC(inp.value));
+            inp.addEventListener('focus', () => { if (inp.value) showAC(inp.value); });
+            inp.addEventListener('blur', () => { setTimeout(() => list.classList.remove('show'), 150); });
+
+            inp.addEventListener('keydown', (e) => {
+                const items = list.querySelectorAll('.autocomplete-item');
+                if (!list.classList.contains('show') || items.length === 0) return;
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    acIndex = Math.min(acIndex + 1, items.length - 1);
+                    items.forEach((it, i) => it.classList.toggle('active', i === acIndex));
+                    items[acIndex].scrollIntoView({ block: 'nearest' });
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    acIndex = Math.max(acIndex - 1, 0);
+                    items.forEach((it, i) => it.classList.toggle('active', i === acIndex));
+                    items[acIndex].scrollIntoView({ block: 'nearest' });
+                } else if (e.key === 'Enter' && acIndex >= 0) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    inp.value = items[acIndex].textContent;
+                    list.classList.remove('show');
+                }
+            });
+        })();
+
+        function submit() {
+            const vals = [
+                document.getElementById('name').value,
+                document.getElementById('voltage').value,
+                document.getElementById('phases').value,
+                document.getElementById('pf').value
+            ];
+            window.location.href = 'skp:submit@' + encodeURIComponent(JSON.stringify(vals));
+        }
+
+        function cancel() {
+            window.location.href = 'skp:cancel';
+        }
+
+        // Disable right-click
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // Notify Ruby that UI is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            window.location.href = 'skp:ui_ready';
+        });
+
+        // Enter key to submit (skip if autocomplete is active)
+        document.addEventListener('keydown', (e) => {
+            const acVisible = document.getElementById('acList').classList.contains('show');
+            if (e.key === 'Enter' && !acVisible) submit();
+            if (e.key === 'Escape') cancel();
+        });
+
+        // Periodically save dialog position so Ruby always has the latest
+        // Compute chromeHeight once to avoid fluctuation-induced Y drift
+        var _chromeHeight = 0;
+        setTimeout(function() {
+            _chromeHeight = window.outerHeight - window.innerHeight;
+        }, 300);
+        setInterval(function() {
+            var x = window.screenX;
+            var y = window.screenY - _chromeHeight;
+            if (x > 0 || y > 0) {
+                sketchup.savePosition(x, y);
+            }
+        }, 500);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Oob Elec</title>
+	<!--<meta http-equiv="Content-Type" content="text/html; charset=gb2312">-->
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta http-equiv="MSThemeCompatible" content="Yes">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>-->
+	<script src="./js/jquery.min.js"></script>
+	<script src="./dist/js/bootstrap.min.js"></script>
+	<script src="./dist/js/bootstrap.min.js"></script>
+	<!-- http://jscolor.com/ -->
+	<script src="./dist/js/jscolor.js"></script>
+	 
+	
+	<!-- Bootstrap core CSS -->
+	<!-- <link href="./dist/css/bootstrap.min.css" rel="stylesheet">-->
+    <link href="./dist/css/bootstrap.css" rel="stylesheet">
+	
+
+	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries
+	<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+	<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+	 -->
+	<!--  [if lt IE 9]>-->
+      
+    <script src="./js/html5shiv.js"></script>
+    <script src="./js/respond.min.js"></script>
+	
+	<!--<![endif]-->
+	<!-- NI 0012 -->
+	<style type="text/css">
+		body { 
+			margin-left:5px;
+			margin-right: 15px;
+			margin-bottom: 25px;
+		}
+		html {
+			overflow: -moz-scrollbars-vertical;
+			overflow: scroll;
+		}
+	</style>
+</head>
+
+	<!-- Optional Bootstrap Theme -->
+	<link href="data:text/css;charset=utf-8," data-href="../dist/css/bootstrap-theme.min.css" rel="stylesheet" id="bs-theme-stylesheet">
+ 
+	<!-- Documentation extras -->
+	<!--<link href="../assets/css/docs.min.css" rel="stylesheet">
+	<script src="../assets/js/ie8-responsive-file-warning.js"></script>
+	<script src="../assets/js/ie-emulation-modes-warning.js"></script>
+	-->
+	<!--<link type="text/css" rel="stylesheet" href="jquery.dropdown.css" />
+	<script type="text/javascript" src="jquery.dropdown.js"></script>-->
+
+
+<body leftmargin="5" topmargin="5" marginwidth="5" marginheight="5" >
+
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation" style="display:none;">
+  <div class="container" id="buttonsContainer">
+	<br>
+<!--  rempli en ruby-->
+	<br>	<br>
+  </div>
+</nav>
+
+<font size="2" face="Arial, Helvetica, sans-serif"> 
+
+<br>
+<!------------ DEVICES --------------->
+<!------------ DEVICES --------------->
+<!------------ DEVICES --------------->
+<div class="container">
+	<div class="panel panel-primary">
+		<div class="panel-heading"><span class="glyphicon glyphicon-off"></span><b id="iddevices"> Devices</b><div class="pull-right"onclick="$('#panel_devices').toggle();"><span class="glyphicon glyphicon-minus" ></span></div></div>
+		<div class="panel-body" id="panel_devices">
+			
+			<div class="row">
+
+				<!--&nbsp;
+				<br>-->
+					<div class="col-xs-8">
+						<form role="form">
+							<div class="form-group">
+							 
+							  <select class="form-control" id="selectDevice">
+								<!--<option>Select a device</option>-->
+							   <!-- <option>Preset 1</option>
+								<option>Preset 2</option>
+								<option>Preset 3</option>
+								<option>Preset 5</option>-->
+							  
+							  </select>     
+							
+							</div>
+						 </form>
+					</div>
+					<div class="col-xs-1">
+						<button title= "Add a device" type="button" onclick="selectDevice();" class="btn btn-primary">
+							<span class="glyphicon glyphicon-plus"></span>
+						</button>
+					</div>
+					<!-- #14 delete de custom device -->
+					<div class="col-xs-1">
+						<button id="deleteCustomButton" title="Delete custom device" type="button" onclick="deleteCustomDevice();" class="btn btn-danger" style="margin-left: 15px; color:#d43f3a; background-color: #FFFFFF;  border-color: #d43f3a; display:none">
+							<span class="glyphicon glyphicon-trash"></span>
+						</button>
+						<button id="addCustomButton" title="Define a custom device from an existing device" type="button" onclick="newCustomDevice();" class="btn btn-success" style="margin-left: 15px; color:#5cb85c; background-color: #FFFFFF;  border-color: #5cb85c; display:block">
+							<span class="glyphicon glyphicon-edit"></span>
+						</button>
+					</div>
+					<!--<div class="col-xs-2">
+						<button title= "Delete preset" type="button" onclick="deleteCurrentPreset(3)" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span></button>
+					</div>-->
+			</div> <!-- row -->
+		</div> <!-- panel body -->
+	</div> <!-- panel  -->
+</div> <!-- container  -->
+
+<!------------ WIRES --------------->
+<!------------ WIRES --------------->
+<!------------ WIRES --------------->
+<div class="container">
+	<div class="panel panel-primary">
+		<div class="panel-heading"><span class="glyphicon glyphicon-random"></span><b id="idwiring"> Wirings</b><div class="pull-right"onclick="$('#panel_wires').toggle();"><span class="glyphicon glyphicon-minus" ></span></div></div>
+		<div class="panel-body" id="panel_wires">
+			
+			<div class="row">
+
+				<!--&nbsp;
+				<br>-->
+					<div class="col-xs-8">
+						<form role="form">
+							<div class="form-group">
+							 
+							  <select class="form-control" id="selectWire"  onselect="selectWire(this.value)" onchange="selectWire(this.value)">
+								<!--<option>Select a wire type</option>-->
+							   <!-- <option>Preset 1</option>
+								<option>Preset 2</option>
+								<option>Preset 3</option>
+								<option>Preset 5</option>-->
+							  
+							  </select>     
+							
+							</div>
+						 </form>
+					</div>
+					<div class="col-xs-2">
+						<button title= "Connect devices" type="button" onclick="selectWire();" class="btn btn-primary">
+							<span class="glyphicon glyphicon-plus"></span>
+						</button>
+					</div>
+					<!--<div class="col-xs-2">
+						<button title= "Delete preset" type="button" onclick="deleteCurrentPreset(3)" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span></button>
+					</div>-->
+			</div> <!-- row -->
+		</div> <!-- panel body -->
+	</div> <!-- panel  -->
+</div> <!-- container  -->
+
+
+<!-------------- BILLOF MATERIAL TABLE ----------------->
+<!-------------- BILLOF MATERIAL TABLE ----------------->
+<!-------------- BILLOF MATERIAL TABLE ----------------->
+<!-------------- BILLOF MATERIAL TABLE ----------------->
+<div class="container" style="display:block;">
+ <div class="panel panel-primary">
+    <!-- Default panel contents -->
+    <div class="panel-heading"><span class="glyphicon glyphicon-th-list"></span><b id="idbom"> Bill Of Materials</b>
+		<div class="pull-right" >
+			<button title= "Create legend" type="button" onclick="createLegend()" class="btn btn-default btn-xs">
+				<span class="glyphicon glyphicon-list"></span>
+			</button>
+			<button title= "Create 2D BOM" type="button" onclick="createLegendBOM()" class="btn btn-default btn-xs">
+				<span class="glyphicon glyphicon-list-alt"></span>
+			</button>
+			<div STYLE="position:absolute;display:none;"><INPUT type='file' id='file1' accept=".csv"></div>
+			<button title= "Save BOM to csv file" type="button" onclick="saveBOM()" class="btn btn-default btn-xs">
+				<span class="glyphicon glyphicon-floppy-disk"></span>
+			</button>
+			<button title= "View copiable BOM" type="button" onclick="exportBOM()" class="btn btn-default btn-xs">
+				<span class="glyphicon glyphicon-export"></span>
+			</button>
+			<button title= "Update BOM" type="button" onclick="updateDialog();" class="btn btn-default btn-xs">
+				<span class="glyphicon glyphicon-refresh"></span>
+			</button>
+			<span class="glyphicon glyphicon-minus" onclick="$('#panel_bom').toggle();"></span>
+		</div>
+	</div>
+	<div class="panel-body" id="panel_bom">
+		<p><span class="glyphicon glyphicon-random"></span>&nbsp;&nbsp; <b id="idwires2">Wire types</b>:</p>
+    		<!-- Table -->
+		<table class="table">
+			<thead>
+			  <tr>
+				<th id="idsection">Cross section</th>
+				<th id="idnbelts">Nb Elts</th>
+				<th id="idlength">Length</th>
+				<th id="idselect">Select</th>
+			  </tr>
+			</thead>
+			<tbody id="wiretablebody">
+				<tr><td>7</td><td>3 x 1.5 mm<sup>2</sup></td><td>xx.xx m</td><td><button id="12" title="Select" type="button" onclick="selectWireType(event, this.id);" class="btn btn-default btn-xs"><span class="glyphicon glyphicon glyphicon-eye-open"></span></button></td></tr>
+				<tr><td>1</td><td>4 x 1.5 mm<sup>2</sup></td><td>xx.xx m</td><td><button id="12" title="Select" type="button" onclick="selectWireType(event, this.id);" class="btn btn-default btn-xs"><span class="glyphicon glyphicon glyphicon-eye-open"></span></button></td></tr>
+			</tbody>
+		</table>
+	 
+		<p><span class="glyphicon glyphicon-off"></span>&nbsp;&nbsp; <b id="iddevices2">Devices:</b></p>
+    	<!-- Table -->
+		<table class="table">
+			<thead>
+			  <tr>
+				<th id="iddevice">Device</th>
+				<th id="idnumber">Number</th>
+				<th id="idselect2">Select</th>
+			  </tr>
+			</thead>
+			<tbody id="deviceTableBody">
+				<tr>
+					<th scope="row">2 </th>
+					<td>1.5 mm<sup>2</sup></td>
+					<!--<td>10 m</td>
+					<td>
+						<button title= "Select" type="button" onclick="selectWireType()" class="btn btn-primary btn-xs">
+							<span class="glyphicon glyphicon glyphicon-eye-open"></span>
+						</button></td>-->
+				</tr>
+			</tbody>
+		</table>
+		
+		<p><span class="glyphicon glyphicon-retweet"></span>&nbsp;&nbsp; <b id="idcircuits">Circuits:</b></p>
+    	<!-- Table -->
+		<table class="table">
+			<thead>
+				<tr>
+					<th id="idcircuitnumber">Name</th>
+					<th id="idcircuitdevices">Devices</th>
+					<th id="idcircuitlength">Lenght</th>
+					<th id="idcircuitselect">Select</th>
+					<th id="idcircuitcolor" title="Display circuits color">
+						<input  class="form-check-input" type="checkbox" checked value="" id="colorCheck1" onchange="switchColorMode(this);">
+						<label style="margin-bottom: 0px;" class="form-check-label" for="colorCheck1"> &nbsp;&nbsp;Color</label> 
+					</th>
+				</tr>
+			</thead>
+			<tbody id="circuitsTableBody">
+				<tr><td>
+					<span style="display:none" id="circuit1input">
+						<input id="circuit1inputName" value="Circuit 1">
+						<span class="glyphicon glyphicon glyphicon-ok" onclick="validateCircuitName();"></span> 
+						<span class="glyphicon glyphicon glyphicon-remove" onclick="cancelCircuitName();"></span>
+					</span> 
+					<span id="circuit1output">
+						<span id="circuit1Result">Circuit 1</span>
+						<span class="glyphicon glyphicon glyphicon-pencil" id="circuit1" onclick="editCircuitName(this);"></span>
+					</span> 
+				</td><td>4</td><td> 4</td>
+				<td>
+					<button id="Circuit 1" title="Select circuit" type="button" onclick="selectCircuit(this.id);" class="btn btn-primary btn-xs">
+					<span class="glyphicon glyphicon glyphicon-eye-open">
+					</span></button>
+				</td>
+				<td> 
+					<button id="12" title="Change color" type="button" class="btn btn-default btn-xs jscolor {valueElement:'id10',value:'#66ccff'}">
+						<span style="pointer-events: none" class="glyphicon glyphicon glyphicon-tint" ></span>
+					</button>
+					<input id="id10" value="10" onchange="updateColor(this.jscolor, this.id)" style="display:none;">
+				</td></tr>
+				<tr><td>Circuit 2</td><td>3</td><td> 3</td><td><button id="Circuit 2" title="Select circuit" type="button" onclick="selectCircuit(this.id);" class="btn btn-primary btn-xs"><span class="glyphicon glyphicon glyphicon-eye-open"></span></button></td><td> <button id="12" title="Change color" type="button" class="btn btn-default btn-xs jscolor {valueElement:'id10',value:'#66ccff'}">	<span style="pointer-events: none" class="glyphicon glyphicon glyphicon-tint" ></span></button><input id="id10" value="10" onchange="updateColor(this.jscolor, this.id)" style="display:none;"></td></tr><tr><td>Circuit 3</td><td>3</td><td> 3</td><td><button id="Circuit 3" title="Select circuit" type="button" onclick="selectCircuit(this.id);" class="btn btn-primary btn-xs"><span class="glyphicon glyphicon glyphicon-eye-open"></span></button></td><td> <button id="12" title="Change color" type="button" class="btn btn-default btn-xs jscolor {valueElement:'id10',value:'#66ccff'}">	<span style="pointer-events: none" class="glyphicon glyphicon glyphicon-tint" ></span></button><input id="id10" value="10" onchange="updateColor(this.jscolor, this.id)" style="display:none;"></td></tr><tr><td>Circuit 4</td><td>6</td><td> 6</td><td><button id="Circuit 4" title="Select circuit" type="button" onclick="selectCircuit(this.id);" class="btn btn-primary btn-xs"><span class="glyphicon glyphicon glyphicon-eye-open"></span></button></td><td> <button id="12" title="Change color" type="button" class="btn btn-default btn-xs jscolor {valueElement:'id10',value:'#66ccff'}">	<span style="pointer-events: none" class="glyphicon glyphicon glyphicon-tint" ></span></button><input id="id10" value="10" onchange="updateColor(this.jscolor, this.id)" style="display:none;"></td></tr><tr><td>Circuit 5</td><td>4</td><td> 4</td><td><button id="Circuit 5" title="Select circuit" type="button" onclick="selectCircuit(this.id);" class="btn btn-primary btn-xs"><span class="glyphicon glyphicon glyphicon-eye-open"></span></button></td><td> <button id="12" title="Change color" type="button" class="btn btn-default btn-xs jscolor {valueElement:'id10',value:'#66ccff'}">	<span style="pointer-events: none" class="glyphicon glyphicon glyphicon-tint" ></span></button><input id="id10" value="10" onchange="updateColor(this.jscolor, this.id)" style="display:none;"></td></tr><tr><td>Circuit 6</td><td>2</td><td> 2</td><td><button id="Circuit 6" title="Select circuit" type="button" onclick="selectCircuit(this.id);" class="btn btn-primary btn-xs"><span class="glyphicon glyphicon glyphicon-eye-open"></span></button></td><td> <button id="12" title="Change color" type="button" class="btn btn-default btn-xs jscolor {valueElement:'id10',value:'#66ccff'}">	<span style="pointer-events: none" class="glyphicon glyphicon glyphicon-tint" ></span></button><input id="id10" value="10" onchange="updateColor(this.jscolor, this.id)" style="display:none;"></td></tr><tr><td>Circuit 7</td><td>2</td><td> 2</td><td><button id="Circuit 7" title="Select circuit" type="button" onclick="selectCircuit(this.id);" class="btn btn-primary btn-xs"><span class="glyphicon glyphicon glyphicon-eye-open"></span></button></td><td> <button id="12" title="Change color" type="button" class="btn btn-default btn-xs jscolor {valueElement:'id10',value:'#66ccff'}">	<span style="pointer-events: none" class="glyphicon glyphicon glyphicon-tint" ></span></button><input id="id10" value="10" onchange="updateColor(this.jscolor, this.id)" style="display:none;"></td></tr><tr><td>Circuit 8</td><td>3</td><td> 3</td><td><button id="Circuit 8" title="Select circuit" type="button" onclick="selectCircuit(this.id);" class="btn btn-primary btn-xs"><span class="glyphicon glyphicon glyphicon-eye-open"></span></button></td><td> <button id="12" title="Change color" type="button" class="btn btn-default btn-xs jscolor {valueElement:'id10',value:'#66ccff'}">	<span style="pointer-events: none" class="glyphicon glyphicon glyphicon-tint" ></span></button><input id="id10" value="10" onchange="updateColor(this.jscolor, this.id)" style="display:none;"></td></tr><tr><td>Circuit 9</td><td>2</td><td> 2</td><td><button id="Circuit 9" title="Select circuit" type="button" onclick="selectCircuit(this.id);" class="btn btn-primary btn-xs"><span class="glyphicon glyphicon glyphicon-eye-open"></span></button></td><td> <button id="12" title="Change color" type="button" class="btn btn-default btn-xs jscolor {valueElement:'id10',value:'#66ccff'}">	<span style="pointer-events: none" class="glyphicon glyphicon glyphicon-tint" ></span></button><input id="id10" value="10" onchange="updateColor(this.jscolor, this.id)" style="display:none;"></td></tr><tr><td>Circuit 10</td><td>2</td><td> 2</td><td><button id="Circuit 10" title="Select circuit" type="button" onclick="selectCircuit(this.id);" class="btn btn-primary btn-xs"><span class="glyphicon glyphicon glyphicon-eye-open"></span></button></td><td> <button id="12" title="Change color" type="button" class="btn btn-default btn-xs jscolor {valueElement:'id10',value:'#66ccff'}">	<span style="pointer-events: none" class="glyphicon glyphicon glyphicon-tint" ></span></button><input id="id10" value="10" onchange="updateColor(this.jscolor, this.id)" style="display:none;"></td></tr><tr><td>Circuit 11</td><td>2</td><td> 2</td><td><button id="Circuit 11" title="Select circuit" type="button" onclick="selectCircuit(this.id);" class="btn btn-primary btn-xs"><span class="glyphicon glyphicon glyphicon-eye-open"></span></button></td><td> <button id="12" title="Change color" type="button" class="btn btn-default btn-xs jscolor {valueElement:'id10',value:'#66ccff'}">	<span style="pointer-events: none" class="glyphicon glyphicon glyphicon-tint" ></span></button><input id="id10" value="10" onchange="updateColor(this.jscolor, this.id)" style="display:none;"></td></tr><tr><td>Circuit 12</td><td>4</td><td> 4</td><td><button id="Circuit 12" title="Select circuit" type="button" onclick="selectCircuit(this.id);" class="btn btn-primary btn-xs"><span class="glyphicon glyphicon glyphicon-eye-open"></span></button></td><td> <button id="12" title="Change color" type="button" class="btn btn-default btn-xs jscolor {valueElement:'id10',value:'#66ccff'}">	<span style="pointer-events: none" class="glyphicon glyphicon glyphicon-tint" ></span></button><input id="id10" value="10" onchange="updateColor(this.jscolor, this.id)" style="display:none;"></td></tr>
+			</tbody>
+		</table>
+	  </div>
+    </div>
+  </div> <!-- container  -->
+
+  
+<!-------------- PARAMETERS ----------------->
+<!-------------- PARAMETERS ----------------->
+<!-------------- PARAMETERS ----------------->
+<!-------------- PARAMETERS ----------------->
+
+
+<div class="container" style="display:block;">
+ <div class="panel panel-default">
+    <!-- Default panel contents -->
+    <div class="panel-heading"><span class="glyphicon glyphicon-th-list"></span><b id="idparams"> Parameters</b>
+		<button title= "Help" type="button" onclick="$('#image_help').toggle();" class="btn btn-default btn-xs">
+				<span class="glyphicon glyphicon-question-sign"></span>
+		</button>
+		<div id='image_help' style='display:none; position:absolute; left:100px;z-index: 100;' >
+			<img style='height:400px;z-index: 100;' src='./images/HelpParams.png' />
+		</div>
+		<div class="pull-right" >
+			<button title= "Update BOM" type="button" onclick="updateDialog();" class="btn btn-primary btn-xs">
+				<span class="glyphicon glyphicon-refresh"></span>
+			</button>
+			<!--<button title= "Save parameters to csv file" type="button" onclick="selectWireType()" class="btn btn-default btn-xs">
+				<span class="glyphicon glyphicon-floppy-disk"></span>
+			</button>-->
+			<span class="glyphicon glyphicon-minus" onclick="$('#panel_params').toggle();"></span>
+		</div>
+	</div>
+	<div class="panel-body" id="panel_params">
+		<!--<p><span class="glyphicon glyphicon-random"></span>&nbsp;&nbsp;Parameters:</p>-->
+  
+		<!-- Table -->
+		<table class="table">
+       <!-- <thead>
+          <tr>
+            <th>Name</th>
+            <th>Value</th>
+            <th></th>
+			
+          </tr>
+        </thead>-->
+        <tbody>
+			<tr>
+				<th scope="row" id="idxtral">Extra lenght </th>
+				<td>
+					<div class="input-group input-group-sm">
+						<input id="xtraLength" title="Extra length of wire for each device" type="text" class="form-control" placeholder="1.0" aria-describedby="sizing-addon3">
+						<span title="Update model" class="input-group-addon" id="sizing-addon3" onclick="updateDialog();"><span class="glyphicon glyphicon-refresh"></span></span>
+				</div>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row" id="xtralb">Switch board extra length </th>
+				<td>
+					<div class="input-group input-group-sm">
+						
+						<input id="xtraLengthBoard" type="text"title="Extral length of wires arriving at the switch board"  class="form-control" placeholder="2.0" aria-describedby="sizing-addon3">
+						<span title="Update model" class="input-group-addon" id="sizing-addon3" onclick="updateDialog();"><span class="glyphicon glyphicon-refresh"></span></span>
+					</div>
+				</td>
+				
+			</tr>
+			<tr>
+			<th scope="row" id="hautprise">Height of outlets (from floor)</th>
+				<td>
+					<div class="input-group input-group-sm">
+						<input id="outletHeight" type="text" title="Distance between the floor and the center of outlets"  class="form-control" placeholder="0.3" aria-describedby="sizing-addon3">
+						<span title="Update model" class="input-group-addon" id="sizing-addon3" onclick="updateDialog();"><span class="glyphicon glyphicon-refresh"></span></span>
+					</div>
+				</td>
+				
+			</tr>
+			
+			<tr>
+				<th scope="row" id="hautinter">Height of switches (from floor)</th>
+				<td>
+					<div class="input-group input-group-sm">
+						<input id="switchHeight" type="text" title="Distance between the floor and the center of switches"  class="form-control" placeholder="1.1" aria-describedby="sizing-addon3">
+						<span title="Update model" class="input-group-addon" id="sizing-addon3" onclick="updateDialog();"><span class="glyphicon glyphicon-refresh"></span></span>
+					</div>
+				</td>
+				
+			</tr>
+			<tr>
+				<th scope="row" id="hautmur">Height of wall lights (from floor)</th>
+				<td>
+					<div class="input-group input-group-sm">
+						<input id="wallightHeight" type="text" title="Distance between the floor and the wall lights"  class="form-control" placeholder="1.1" aria-describedby="sizing-addon3">
+						<span title="Update model" class="input-group-addon" id="sizing-addon3" onclick="updateDialog();"><span class="glyphicon glyphicon-refresh"></span></span>
+					</div>
+				</td>
+				
+			</tr>
+			<tr>
+				<th scope="row" id="hautplafond">Height of ceiling  </th>
+				<td>
+					<div class="input-group input-group-sm">
+						<input id="roofHeight" type="text" title="Distance between the floor and the ceiling"  class="form-control" placeholder="2.5" aria-describedby="sizing-addon3">
+						<span title="Update model" class="input-group-addon" id="sizing-addon3" onclick="updateDialog();"><span class="glyphicon glyphicon-refresh"></span></span>
+					</div>
+				</td>
+				
+			</tr>
+			
+			<!-- #15 Hauteurs  custom -->
+			<tr>
+				<th scope="row" id="hautcustom1">Custom height 1</th>
+				<td>
+					<div class="input-group input-group-sm">
+						<input id="customHeight1" type="text" title="Custom height 1"  class="form-control" placeholder="0.3" aria-describedby="sizing-addon3">
+						<span title="Update model" class="input-group-addon" id="sizing-addon3" onclick="updateDialog();"><span class="glyphicon glyphicon-refresh"></span></span>
+					</div>
+				</td>
+			</tr>
+			
+			<tr>
+				<th scope="row" id="hautcustom2">Custom height 2</th>
+				<td>
+					<div class="input-group input-group-sm">
+						<input id="customHeight2" type="text" title="Custom height 2"  class="form-control" placeholder="0.3" aria-describedby="sizing-addon3">
+						<span title="Update model" class="input-group-addon" id="sizing-addon3" onclick="updateDialog();"><span class="glyphicon glyphicon-refresh"></span></span>
+					</div>
+				</td>	
+			</tr>
+			
+			<tr>
+				<th scope="row" id="hautcustom3">Custom height 3</th>
+				<td>
+					<div class="input-group input-group-sm">
+						<input id="customHeight3" type="text" title="Custom height 3"  class="form-control" placeholder="0.3" aria-describedby="sizing-addon3">
+						<span title="Update model" class="input-group-addon" id="sizing-addon3" onclick="updateDialog();"><span class="glyphicon glyphicon-refresh"></span></span>
+					</div>
+				</td>
+			</tr>
+			
+			<!-- #20 +2 Hauteurs  custom -->
+			<tr>
+				<th scope="row" id="hautcustom4">Custom height 4</th>
+				<td>
+					<div class="input-group input-group-sm">
+						<input id="customHeight4" type="text" title="Custom height 4"  class="form-control" placeholder="0.3" aria-describedby="sizing-addon3">
+						<span title="Update model" class="input-group-addon" id="sizing-addon3" onclick="updateDialog();"><span class="glyphicon glyphicon-refresh"></span></span>
+					</div>
+				</td>	
+			</tr>
+			
+			<tr>
+				<th scope="row" id="hautcustom5">Custom height 5</th>
+				<td>
+					<div class="input-group input-group-sm">
+						<input id="customHeight5" type="text" title="Custom height 5"  class="form-control" placeholder="0.3" aria-describedby="sizing-addon3">
+						<span title="Update model" class="input-group-addon" id="sizing-addon3" onclick="updateDialog();"><span class="glyphicon glyphicon-refresh"></span></span>
+					</div>
+				</td>
+			</tr>
+			
+			<!-- #7 rayon -->
+			<tr>
+				<th scope="row" id="rayoncable">Wires radius  </th>
+				<td>
+					<div class="input-group input-group-sm">
+						<input id="wireRadius" type="text" title="Radius of wires (distance between wire and straight line)"  class="form-control" placeholder="20" aria-describedby="sizing-addon3">
+						<span title="Update model" class="input-group-addon" id="sizing-addon3" onclick="updateDialog();"><span class="glyphicon glyphicon-refresh"></span></span>
+					</div>
+				</td>
+				
+			</tr>
+        </tbody>
+		</table>
+		
+		<form role="form">
+			<div class="form-group">
+				<select class="form-control" id="selectStandard" onselect="selectStandard(this.value)" onchange="selectStandard(this.value)">
+					<!--<option>Select a standard for devices</option>
+				    <option>Type A : FRRFDSMLKDFS D%FSk sdfSDFet 1</option>
+					<option>Type B: MAlyasia, japan , chjina ....Preset 2</option>
+					<option>Preset 3</option>
+					<option>Preset 5</option>-->
+				</select>     
+			</div>
+		</form>
+		<b id="display">Display:</b>
+		<table class="table">
+            <tbody>
+			<tr>
+				<td>
+					<label class="checkbox">
+						<input type="checkbox" value="TEXT" id="inlineCheckbox1" onchange="chekOption(this)"><b id="idviewtext"> View text</b> 
+					</label>
+				</td>
+				<td>
+					<label class="checkbox">
+						<input type="checkbox" value="HEIGHT" id="inlineCheckboxHeight" onchange="chekOption(this)"><b id="idviewheights"> Heights</b> 
+					</label>
+				</td>
+				<td>
+					<label class="checkbox">
+						<input type="checkbox" value="2D" id="inlineCheckbox2" onchange="chekOption(this)"><b id="idview2d"> View 2D</b>
+					</label>
+				</td>
+				<td>
+					<label class="checkbox">
+						<input type="checkbox" value="3D" id="inlineCheckbox3" onchange="chekOption(this)"><b id="idview3d"> View 3D</b>
+					</label>
+				</td>
+			</tr>
+			<tr>
+				<!-- #7 dotted lines -->
+				<td>
+					<label class="checkbox">
+						<input type="checkbox" value="Wires" id="inlineCheckbox4" onchange="chekOption(this)"><b id="idviewwires"> Wires </b>
+					</label>
+				</td>
+				<td>
+					<label class="checkbox">
+						<input type="checkbox" value="DottedLines" id="inlineCheckbox5" onchange="chekOption(this)"><b id="idviewdottedlines"> Dotted lines</b>
+					</label>
+				</td>
+				<!-- #25 vertical lines -->
+				<td>
+					<label class="checkbox">
+						<input type="checkbox" value="VerticalLines" id="inlineCheckbox6" onchange="chekOption(this)"><b id="idviewverticallines"> Vert. lines</b>
+					</label>
+				</td>
+			</tr>
+		  </tbody>
+		</table>	
+	  </div>
+    </div>
+  </div> <!-- container  -->
+
+<!-- License message-->
+<!-- License message-->
+<!-- License message-->
+<!-- License message-->
+<div class="container">	
+	<div id="keydiv" class="alert alert-warning" role="alert">
+		<b>
+			<span id="keyspan">No license found.</span>
+		</b><br>
+		<span id="keyspan2">Please register you Oob Electrical plugin now.</span>
+		<button id="keybutton" title="Register now" type="button" onclick="registerOobElec()" class="btn btn-primary">
+			<span class="glyphicon glyphicon-wrench"></span>&nbsp;&nbsp;<b id="keybuttonstr">Register now</b>
+		</button>
+		<button id="keybutton2" style="display:none" title="Buy a full license" type="button" onclick="buyOobCabinet()" class="btn btn-success"><span class="glyphicon glyphicon-usd"></span>&nbsp;&nbsp;<b id="keybuttonstr2">Buy</b></button>
+		<button id="keybutton3" style="display:none" title="Activate your full license" type="button" onclick="activateOobCabinet()" class="btn btn-success"><span class="glyphicon glyphicon-check"></span>&nbsp;&nbsp;<b id="keybuttonstr3">Activate</b></button>
+		
+	</div>
+	<div id="activateFromIdDiv" style="display:none" >
+		<span>If you allready have a full license Id : </span>
+		<button class="btn btn-default btn-xs" type="button" onclick="activateOobCabinetFromId()"> Active from Id </button>
+	</div>	
+</div> <!-- container  -->
+
+
+
+	
+ </body>
+
+ <!-- Bootstrap core JavaScript
+  ================================================== -->
+  <!-- Placed at the end of the document so the pages load faster 
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script src="./dist/js/bootstrap.min.js"></script>-->
+ <!--<script src="../../assets/js/docs.min.js"></script>-->
+
+ <!--<script src="./dist/colorpicker/js/colorpicker.js"></script>
+ <script src="./dist/color-picker/color-picker.js"></script>-->
+ <script type='text/javascript'>
+	
+	function onKeyUp(e) {
+		//alert("KeyUp "+e.code+" "+e.keyCode );
+		if(e.keyCode == 16 ) // Shift
+			rubyCalled('shiftUp');
+	}
+	
+	$(function(){
+		//alert("Ready");
+		// #24 abonnement au key up pour transmettre le shift a ruby
+		document.addEventListener('keyup', onKeyUp);
+
+
+		rubyCalled( 'documentReady');	
+	});
+	
+	function chekOption(elt)
+	{
+		if(elt.checked == true) 
+			rubyCalled( 'checkOption', elt.value+"1");
+		else	
+			rubyCalled( 'checkOption', elt.value+"0");
+	}
+	
+	function exportBOM()
+	{	
+		//document.getElementById("file1").click();
+		//var fullPath = document.getElementById('file1').value;
+	
+		rubyCalled( 'exportBOM');
+		
+	}
+	
+	function saveBOM()
+	{	
+		rubyCalled( 'saveBOM');	
+	}
+	function createLegendBOM()
+	{	
+		rubyCalled( 'createLegendBOM');	
+	}
+	function createLegend()
+	{	
+		rubyCalled( 'createLegend');	
+	}
+	
+	function activateOobCabinetFromId()
+	{	
+		//alert("activateOobCabinetFromId");
+		rubyCalled( 'activateOobCabinetFromId');
+	}
+	
+	function applyToAll(id)
+	{
+		//alert("Apply to all "+id);
+		rubyCalled( 'applyAll', id);
+	}
+	
+	// License management
+	function registerOobElec(){
+		rubyCalled( 'registerOobElec');
+	}
+	function buyOobCabinet(){
+		//alert("buyOobCabinet");
+		rubyCalled( 'buyOobCabinet');
+	}
+	function activateOobCabinet(){
+		//alert("buyOobCabinet");
+		rubyCalled( 'activateOobCabinet');
+	}
+	
+	function setKeyText(msg){
+		//alert("setKeyText "+msg);
+		var reg=new RegExp("[;]+", "g");
+		var tableau=msg.split(reg);
+		//alert(tableau[0]);
+		if(tableau[0] == "OK"){ // Licence trial  valide
+			// License OK
+			var reg2=new RegExp("[|]+", "g");
+			var tableau2=tableau[1].split(reg2);
+			$('#keydiv').removeClass('alert-warning');
+			$('#keydiv').addClass('alert-success');
+			$('#keyspan').text(tableau2[0]);
+			$('#keyspan2').text(tableau2[1]);
+			//$('#keybutton').hide();
+			//$('#keybutton2').show();
+			//$('#keybutton3').show();
+			// On montre les div
+			//$('#countertopdiv').show();
+			//$('#div_doors').show();
+			//$('#div_handles').show();
+			//$('#div_shelves').show();
+			//$('#div_box').show();
+			//$('#div_type').show();
+		}
+		if(tableau[0] == "KO"){ // KO pas de licence
+			// Activation failed or no license found
+			// On cache les div
+			// split par | pour lezs deux strings
+			//alert(tableau[1]);
+			var reg2=new RegExp("[|]+", "g");
+			var tableau2=tableau[1].split(reg2);
+			//alert(tableau2[0]);
+			$('#countertopdiv').hide();
+			$('#div_doors').hide();
+			$('#div_handles').hide();
+			$('#div_shelves').hide();
+			$('#div_box').hide();
+			$('#div_type').hide();
+			
+			// Gestion du texte et boutons
+			$('#keydiv').addClass('alert-warning');
+			$('#keydiv').removeClass('alert-success');
+			$('#keyspan').text(tableau2[0]);
+			$('#keyspan2').text(tableau2[1]);
+			$('#keybutton2').hide();
+			$('#keybutton3').hide();
+			$('#keybutton').show();
+		}
+		if(tableau[0] == "EXPIRED"){ // licence expirée
+			
+			// Activation failed or no license found
+			// On cache les div
+			var reg2=new RegExp("[|]+", "g");
+			var tableau2=tableau[1].split(reg2);
+			$('#keydiv').removeClass('alert-warning');
+			$('#keydiv').addClass('alert-success');
+			$('#countertopdiv').hide();
+			$('#div_doors').hide();
+			$('#div_handles').hide();
+			$('#div_shelves').hide();
+			$('#div_box').hide();
+			$('#div_type').hide();
+			// Gestion du texte et boutons
+			$('#keydiv').addClass('alert-warning');
+			$('#keydiv').removeClass('alert-success');
+			$('#keyspan').text(tableau2[0]);
+			$('#keyspan2').text(tableau2[1]);
+			$('#keybutton').hide();
+			$('#keybutton2').show();
+			$('#keybutton3').show();
+			//alert("Expir");
+		}
+		if(tableau[0] == "PRO"){ // licence PRO
+			$('#keydiv').removeClass('alert-warning');
+			$('#keydiv').addClass('alert-success');
+			$('#keyspan').text(tableau[1]);
+			$('#keyspan2').hide();
+			//$('#keybutton').hide();
+			$('#keybutton2').hide();
+			$('#keybutton3').hide();
+			// On montre les div
+			$('#countertopdiv').show();
+			$('#div_doors').show();
+			$('#div_handles').show();
+			$('#div_shelves').show();
+			$('#div_box').show();
+			$('#div_type').show();
+			$('#activateFromIdDiv').hide();
+		}
+		
+	}	
+	// Clear des options depuis ruby
+	//=====================================
+	function clearSelectOptions(selectId){
+		// Fill options of presets selector V4.6
+		//	var selectitem = document.getElementById("selectPreset");
+		var selectitem = document.getElementById(selectId);
+		//alert( labelString );
+		if (selectitem) {
+			selectitem.options.length = 0;
+		}
+	}
+	
+	// Ajout de preset depuis ruby
+	//==============================
+	function addSelectOption(msg){
+		var reg=new RegExp("[;]+", "g");
+		var tableau=msg.split(reg)
+		var selectitem = document.getElementById(tableau[0]);
+		if (selectitem) 
+			selectitem.options[selectitem.options.length] = new Option(tableau[1],tableau[1]); 
+	}
+	
+	// Clear des options depuis ruby
+	//=====================================
+	function clearPresetOption(){
+		// Clear options of presets selector V4.6
+		var selectitem = document.getElementById("selectPreset");
+		if (selectitem) {
+			selectitem.options.length = 0;
+		}
+	}
+	function clearDeviceList(){
+		// Clear options of presets selector #14
+		var selectitem = document.getElementById("selectDevice");
+		if (selectitem) {
+			selectitem.options.length = 0;
+		}
+	}
+	
+	// Ajout de devices depuis ruby
+	//==============================
+	function addDeviceOption(msg,id){
+		// Fill options of presets selector V4.6
+		var selectitem = document.getElementById("selectDevice");
+		//alert( labelString );
+		if (selectitem) {
+			selectitem.options[selectitem.options.length] = new Option(msg,id); 
+		}
+	}
+	
+	function addWireOption(msg){
+		// Fill options of presets selector V4.6
+		var selectitem = document.getElementById("selectWire");
+		//alert( labelString );
+		if (selectitem) {
+			selectitem.options[selectitem.options.length] = new Option(msg,msg); 
+		}
+	}
+	
+	function addStandardOption(msg,id){
+		// Fill options of presets selector V4.6
+		var selectitem = document.getElementById("selectStandard");
+		//alert( labelString );
+		if (selectitem) {
+			selectitem.options[selectitem.options.length] = new Option(msg,id); 
+		}
+	}
+	// Set Value : id, value, string, tootip
+	//===========================
+	function setStandardValue(msg){
+		var item = document.getElementById("selectStandard")
+		if (item) {
+			//alert( msg );
+			item.value = msg;
+		}
+	}
+	
+	function setHTML(id, html)	{
+		console.log(html);
+		document.getElementById(id).innerHTML = html;
+		//alert(html);
+	}
+	// Sauvegarde d'un nouveau preset
+	//==================================
+	function saveCurrentPreset(){
+		rubyCalled( 'savepreset', 'true');
+	}
+	
+	// Suppression du preset en cours
+	//==================================
+	function deleteCurrentPreset(){
+		var result = $('#selectPreset').val();
+		rubyCalled( 'deletepreset', result);
+	}
+	
+	// Update dialog 
+	//=========================
+	function updateDialog(){
+		
+		rubyCalled( 'updateDialog');
+	}
+	
+	// Call back sur select
+	//============================
+	$('#doorType').change(function(){ApplyModifs();});
+	$('#handleType').change(function(){ApplyModifs();});
+	$('#handlePosition').change(function(){ApplyModifs();});
+	$('#handlePositionWall').change(function(){ApplyModifs();});
+	$('#handleOrientation').change(function(){ApplyModifs();});
+	$('#angleCabinetType').change(function(){ApplyModifs();});
+	 //$('#xtraLength').val(12.12);
+
+	// Input callbacks
+	//===============================
+	$('#xtraLength').on('input', function() { rubyCalled('setExtraLength', $('#xtraLength').val());});
+	$('#xtraLengthBoard').on('input', function() { rubyCalled('setExtraLengthBoard', $('#xtraLengthBoard').val());});
+	// New 1.1.3
+	$('#outletHeight').on('input', function() { rubyCalled('setoutletHeight', $('#outletHeight').val());});
+	$('#switchHeight').on('input', function() { rubyCalled('setswitchHeight', $('#switchHeight').val());});
+	$('#wallightHeight').on('input', function() { rubyCalled('setwallLightsHeight', $('#wallightHeight').val());});
+	$('#roofHeight').on('input', function() { rubyCalled('setroofHeight', $('#roofHeight').val());});
+	
+	// #15 hauteur custom
+	$('#customHeight1').on('input', function() { rubyCalled('setcustomHeight1', $('#customHeight1').val());});
+	$('#customHeight2').on('input', function() { rubyCalled('setcustomHeight2', $('#customHeight2').val());});
+	$('#customHeight3').on('input', function() { rubyCalled('setcustomHeight3', $('#customHeight3').val());});
+	// #20 hauteur custom
+	$('#customHeight4').on('input', function() { rubyCalled('setcustomHeight4', $('#customHeight4').val());});
+	$('#customHeight5').on('input', function() { rubyCalled('setcustomHeight5', $('#customHeight5').val());});
+	
+	// # 7
+	$('#wireRadius').on('input', function() { rubyCalled('setwireRadius', $('#wireRadius').val());});
+
+	// #14 delete d'un customDevice
+	function deleteCustomDevice(){
+		var result = $('#selectDevice').val();
+		//alert(result);
+		rubyCalled('deleteCustomDevice', result);
+	}
+	
+	function newCustomDevice(){
+		rubyCalled('newCustomDevice', "");
+	}
+	
+	// Call back sur select
+	//============================
+	function selectDevice()	{
+		var result = $('#selectDevice').val();
+		//alert(result);
+		rubyCalled('selectdevice', result);
+	}
+	
+	$('#selectDevice').change(function(){
+		var result = $(this).val();
+		//alert(result);
+		selectDevice();
+		//alert(result);
+    });
+
+	// Call back sur select
+	//============================
+	function selectWire()	{
+		var result = $('#selectWire').val();
+		//alert(result);
+		rubyCalled('selectwire', result);
+	}
+	
+	$('#selectWire').change(function(){
+		selectWire();
+		//alert(result);
+    });
+	
+	// Call back sur select standard
+	function selectStandard(){
+		var result = $('#selectStandard').val();
+		//alert(result);
+		rubyCalled('selectstandard', result);
+	}
+	$('#selectStandard').change(function(){
+		//alert("change");
+		selectStandard();
+		//alert(result);
+    });
+	
+	
+
+	// ApplyModif : appelé à la modification de couleur
+	//====================================================
+	function ApplyModifs()
+	{
+		console.log("ApplyModifs");
+		/*var doorType = $('#doorType').val();
+		var handleType = $('#handleType').val();
+		var handlePosition = $('#handlePosition').val();
+		var handlePositionWall = $('#handlePositionWall').val();
+		var handleOrientation = $('#handleOrientation').val();
+		var angleCabinetType = $('#angleCabinetType').val();
+		
+		var cabinettype = document.getElementById("cabinet_type").value;
+		//alert(cabinettype);
+		//alert(angleCabinetType);
+		if(cabinettype == "1") {
+			if(angleCabinetType == "Not an angle")
+				$('#input_angle_widthdiv').hide();
+			else 
+				$('#input_angle_widthdiv').show();
+		}
+		// On value des inputs caches poutr les recuperer en ruby
+		if (document.getElementById("doorTypeVal")) document.getElementById("doorTypeVal").value = doorType;
+		if (document.getElementById("handleTypeVal")) document.getElementById("handleTypeVal").value = handleType;
+		if (document.getElementById("handlePositionVal")) document.getElementById("handlePositionVal").value = handlePosition;
+		if (document.getElementById("handlePositionValWall")) document.getElementById("handlePositionValWall").value = handlePositionWall;
+		if (document.getElementById("handleOrientationVal")) document.getElementById("handleOrientationVal").value = handleOrientation;
+		if (document.getElementById("angleCabinetTypeVal")) document.getElementById("angleCabinetTypeVal").value = angleCabinetType;
+		
+		str = '1' // '1;'+doorType+";"+handleType+";"+handlePosition+";"+handleOrientation;
+		//alert(str);
+		rubyCalled( 'calcul', str);*/
+	}
+	
+	// Callback sur enter des inputs
+	///====================================
+	function submitenter(myfield,e)
+	{
+		var keycode;
+		if (window.event) 
+			keycode = window.event.keyCode;
+		else 
+			if (e) keycode = e.which;
+			else return true;
+		
+		if (keycode == 13) {
+			ApplyModifs();// rubyCalled( 'calcul', '1');
+			return false;
+		}
+		else
+		   return true;
+	}
+
+	/*function rubyCalled2( cb_name, msg, value ) {
+		fake_url = 'skp:' + cb_name + '@' + msg+
+		//alert( fake_url);
+		window.location.href = fake_url
+	}*/
+	function rubyCalled( cb_name, msg ) {
+		fake_url = 'skp:' + cb_name + '@' + msg
+		//alert( fake_url);
+		window.location.href = fake_url
+	}
+	
+	// Boutons Apply, New
+	//=============================
+	function button_clicked(flag) {
+		
+			rubyCalled( 'setWireType', flag);
+			//ApplyModifs();
+			return;
+	
+	}
+	
+	function messageFromSketchUp( msg ) {
+		
+	}
+		
+	// Call back sur radio buttons Type de cabinets
+	//=============================================
+	function setCabinetTypeValue(val){
+		//alert(val);
+		document.getElementById("cabinet_type").value = val;
+		if(val == "1"){
+			// Base cabinet BAS
+			$('#img1').attr('src',"./images/Illustration2-1.png");
+			//$('#img2').attr('src',"./images/Illustration2-2.png");
+			$('#img3').attr('src',"./images/Illustration2-3.png");
+			$('#div_d').show();
+			$('#div_e').show();
+			$('#div_c').show();
+			$('#div_c_wall').hide();
+			$('#div_b').show();
+			$('#div_bwall').hide();
+			
+			$('#div_i').show();
+			$('#div_j').show();
+			$('#div_s').hide();
+			
+			$('#countertopdiv').show();
+			
+			$('#angleCabinetType').show();
+			$('#divhandlePosition').show();
+			$('#divhandlePositionWall').hide();
+			$('#input_wallboxangle_widthdiv').hide();
+			$('#box_width_div').show();
+			
+			
+			if($('#angleCabinetType').val() != "Not an angle")
+				$('#input_angle_widthdiv').show();
+			
+			
+		}
+		if(val == "2"){
+			// Wall cabinet HAUT
+			//alert("2");
+			$('#img1').attr('src',"./images/Illustration1-1.png");
+			//$('#img2').attr('src',"./images/Illustration1-2.png");
+			$('#img3').attr('src',"./images/Illustration1-3.png");
+			$('#div_d').hide();
+			$('#div_e').hide();
+			
+			$('#div_c').hide();
+			$('#div_c_wall').show();
+			$('#div_b').hide();
+			$('#div_bwall').show();
+			$('#div_i').hide();
+			$('#div_j').hide();
+			$('#div_s').show();
+			$('#countertopdiv').hide();
+			$('#angleCabinetType').hide();
+			$('#input_angle_widthdiv').hide();
+			$('#divhandlePosition').hide();
+			$('#divhandlePositionWall').show();
+			$('#input_wallboxangle_widthdiv').hide();
+			$('#box_width_div').show();
+		}
+		
+		if(val == "3"){
+			// Wall angle cabinet
+			//alert("2");
+			$('#img1').attr('src',"./images/Illustration3-1.png");
+			//$('#img2').attr('src',"./images/Illustration1-2.png");
+			$('#img3').attr('src',"./images/Illustration1-3.png");
+			$('#div_d').hide();
+			$('#div_e').hide();
+			$('#div_b').hide();
+			$('#div_bwall').show();
+			$('#div_c').hide();
+			$('#div_c_wall').show();
+			$('#div_i').hide();
+			$('#div_j').hide();
+			$('#div_s').show();
+			$('#countertopdiv').hide();
+			$('#angleCabinetType').hide();
+			$('#input_angle_widthdiv').hide();
+			$('#divhandlePosition').hide();
+			$('#divhandlePositionWall').show();
+			$('#input_wallboxangle_widthdiv').show();
+			$('#box_width_div').hide();
+		}
+		ApplyModifs(); // Recalcul
+		
+	}
+	
+
+	// Set Label
+	//========================
+	function setLabel(msg){
+		<!-- alert( msg );  -->
+		var tableau=msg.split(';');
+		var label = tableau[0]; // attention c'est en dur, p-e faire une fonction plus intelligente (comme logiciel)
+		var labelString = tableau[1];
+		var item = document.getElementById(label);
+		//alert( labelString );
+		if (item) {
+			item.innerHTML = labelString
+		}	
+	}
+
+	function setButtonLabel(msg){
+		var tableau=msg.split(';');
+		var label = tableau[0]; // attention c'est en dur, p-e faire une fonction plus intelligente (comme logiciel)
+		var labelString = tableau[1];
+		var item = document.getElementById(label);
+		alert( item );
+		if (item) {
+			alert( item );
+			item.value = labelString
+		}
+	}
+	
+	function myRGBToHex(rgb) {
+				
+		//alert(rgb);
+		var hex = [
+			rgb.r.toString(16),
+			rgb.g.toString(16),
+			rgb.b.toString(16)
+		];
+		$.each(hex, function (nr, val) {
+			if (val.length == 1) {
+				hex[nr] = '0' + val;
+			}
+		});
+		return hex.join('');
+	}
+	
+	function setBtnColor(btn_id, labelString){
+		var rgb = {};
+		var tableaurgb=labelString.split(',');
+		rgb.r = parseInt(tableaurgb[0]);rgb.g = parseInt(tableaurgb[1]);rgb.b = parseInt(tableaurgb[2]);
+		var hex = myRGBToHex({r:Math.round(rgb.r), g:Math.round(rgb.g), b:Math.round(rgb.b)});
+		$(btn_id).css('backgroundColor', '#' + hex);
+	}
+	
+	// Set Value : id, value, string, tootip
+	//===========================
+	function setValue(msg){
+		var tableau=msg.split(';');
+		var label = tableau[0]; // attention c'est en dur, p-e faire une fonction plus intelligente (comme logiciel)
+		var labelString = tableau[1];
+		var nameString = tableau[2];
+		var tootlipString = tableau[3];
+		//if(label == "doorType") alert(labelString);
+		var item = document.getElementById(label)
+		if (item) {
+			<!-- alert( msg ); -->
+			item.value = labelString;
+			item.title = tootlipString;
+		}
+		
+		if(label == "cabinet_type"){
+			if(labelString == "1")	{
+				$('#labeloption1').addClass('active');
+				$('#labeloption2').removeClass('active');
+				$('#labeloption3').removeClass('active');
+				setCabinetTypeValue(1);
+			}
+			if(labelString == "2") {
+				$('#labeloption1').removeClass('active');
+				$('#labeloption3').removeClass('active');
+				$('#labeloption2').addClass('active');
+				setCabinetTypeValue(2);
+			}
+			if(labelString == "3") {
+				
+				$('#labeloption1').removeClass('active');
+				$('#labeloption2').removeClass('active');
+				$('#labeloption3').addClass('active');
+				setCabinetTypeValue(3);
+			}
+		}
+		if(label == "angleCabinetType"){
+			//alert(labelString);
+			if(labelString == "Not an angle"){
+				//alert(labelString);
+				$('#input_angle_widthdiv').hide();
+			}
+		}
+		// Color btns
+		if(label == "input_color1")	setBtnColor('#color1_btn', labelString);
+		if(label == "input_color2")	setBtnColor('#color2_btn', labelString);
+		if(label == "input_color3")	setBtnColor('#color3_btn', labelString);
+		if(label == "input_color4")	setBtnColor('#color4_btn', labelString);
+		if(label == "input_color5")	setBtnColor('#color5_btn', labelString);
+		
+	}
+	
+	function setCheckValue(msg){
+		
+		var tableau=msg.split(';');
+		var label = tableau[0]; // attention c'est en dur, p-e faire une fonction plus intelligente (comme logiciel)
+		var labelString = tableau[1];
+		var item = document.getElementById(label)
+		if (item) {
+			if (labelString == "false"){
+				item.checked = false;
+				item.value = "false";
+				//alert( msg ); 
+			}
+			else{
+				item.checked = true;
+				item.value = "true";
+				//alert( msg ); 
+			}
+		}
+		//document.getElementById("button").value = 'test'
+	}
+	
+	function onCheckChange(){
+		  //$(this).change(function(){
+		valeurCoche = document.getElementById("input10").checked;  
+		//alert(valeurCoche);
+		if (valeurCoche){
+			document.getElementById("input10").value = "true";
+			//alert( "true" ); 
+		} else{
+			document.getElementById("input10").value = "false";
+			//$(this).val("false");
+			//alert( "false" ); 
+		}
+		 // });
+	}
+	
+	function selectWireType(event)
+	{
+		id = event.target.id;
+		var ctrlPressed = false;
+		if(event.ctrlKey)
+			ctrlPressed = true;
+			
+		if(ctrlPressed)
+			rubyCalled( 'selectWireTypeMultiSel', id);
+		else
+			rubyCalled( 'selectWireTypeMonoSel', id);
+			
+	}
+	function selectDeviceType(id)
+	{
+		//	alert(id);
+		rubyCalled( 'selectDeviceType', id);
+	}
+	//document.getElementById("buttonsContainer").innerHTML = "<br><button type='button' onclick='button_clicked(1)' class='btn btn-primary'><span class='glyphicon glyphicon-random'></span><label id='next1'>&nbsp;2xxxx1.5</label></button>&nbsp;<br><br>";
+	// #19 circuits
+	function selectCircuit(id)
+	{
+		//alert(id);
+		var circuitId = id.replace("Select","");
+		rubyCalled( 'selectCircuit', circuitId);
+	}
+	
+	function switchColorMode(elt){
+		var value = document.getElementById("colorCheck1").value;
+		//alert(elt.checked);
+		
+		rubyCalled( 'switchColorMode', elt.checked);
+	}
+	
+	// Callback sur selection de couleur
+	function updateColor(color, id){
+		var elt = document.getElementById(id);
+		var newColor = "#"+elt.value;
+		var circuitId = id.replace("Color","");
+		//alert("Color" +newColor +" for id "+circuitId);
+		// call ruby
+		sketchup.updateCircuitColor(circuitId, newColor,{onCompleted: function() {
+			console.log('Ruby side done.');
+			}
+		});
+		
+	}
+	
+	var editCircuitId = "";
+	function editCircuitName(elt){
+		editCircuitId = elt.id;
+		document.getElementById(editCircuitId+"input").style.display = "block"; 
+		document.getElementById(editCircuitId+"output").style.display = "none"; 
+	}
+	function validateCircuitName(){
+		var newName = document.getElementById(editCircuitId+'inputName').value;
+		//alert(newName);
+		
+		// Call ruby to save value
+		sketchup.updateCircuitName(editCircuitId, newName,{onCompleted: function() {
+			console.log('Ruby side done.');
+			}
+		});
+		
+		// Update IHM
+		document.getElementById(editCircuitId+'Result').value = newName;
+		document.getElementById(editCircuitId+'Result').innerHTML  = newName;
+		
+		document.getElementById(editCircuitId+"input").style.display = "none"; 
+		document.getElementById(editCircuitId+"output").style.display = "block"; 
+	}
+	function cancelCircuitName(){
+		document.getElementById(editCircuitId+'inputName').value = document.getElementById(editCircuitId+'Result').innerHTML;
+		
+		document.getElementById(editCircuitId+"input").style.display = "none"; 
+		document.getElementById(editCircuitId+"output").style.display = "block"; 
+	}
+</script>
+
+</html>
+
+<!-- end ofOobOne.html -->
