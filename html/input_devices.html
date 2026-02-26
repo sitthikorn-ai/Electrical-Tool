@@ -348,6 +348,22 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 4px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .preview-header .preview-toggle {
+            font-size: 12px;
+            transition: transform 0.3s;
+            margin-right: 4px;
+        }
+
+        .preview-header .preview-toggle.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .preview-body.collapsed {
+            display: none;
         }
 
         .preview-view-btns {
@@ -672,15 +688,20 @@
 
             <!-- Device Thumbnail Preview -->
             <div class="preview-container" id="preview-container">
-                <div class="preview-header">
-                    <div class="preview-label">PREVIEW</div>
+                <div class="preview-header" onclick="togglePreview()">
+                    <div style="display:flex;align-items:center;gap:4px;">
+                        <span class="preview-toggle" id="preview-toggle">▼</span>
+                        <div class="preview-label">PREVIEW</div>
+                    </div>
                     <div class="preview-view-btns">
-                        <button class="view-btn active" id="btn-view-iso" onclick="setPreviewView('iso')">ISO</button>
-                        <button class="view-btn" id="btn-view-top" onclick="setPreviewView('top')">TOP</button>
+                        <button class="view-btn active" id="btn-view-iso" onclick="event.stopPropagation();setPreviewView('iso')">ISO</button>
+                        <button class="view-btn" id="btn-view-top" onclick="event.stopPropagation();setPreviewView('top')">TOP</button>
                     </div>
                 </div>
-                <img id="device-preview" src="" alt="Preview" />
-                <div class="preview-error" id="preview-error" style="display:none;">Preview not available</div>
+                <div class="preview-body" id="preview-body">
+                    <img id="device-preview" src="" alt="Preview" />
+                    <div class="preview-error" id="preview-error" style="display:none;">Preview not available</div>
+                </div>
             </div>
 
             <!-- Offset Inputs -->
@@ -712,6 +733,21 @@
             <button class="btn btn-wall" id="btn-place-on-wall" onclick="placeDeviceOnWall()" disabled style="margin-top:6px;">
                 🧱 Place Device with Ref_Point
             </button>
+
+            <!-- Level Parameter -->
+            <div class="form-group" style="margin-top:8px;">
+                <label>Level Parameter</label>
+                <select id="level-parameter" onchange="onLevelParameterChange()">
+                    <option value="">-- Select Level --</option>
+                    <option value="Height of Ceiling Light">Height of Ceiling Light</option>
+                    <option value="Height of Wall Light">Height of Wall Light</option>
+                    <option value="Height of Switch">Height of Switch</option>
+                    <option value="Height of Receptacle">Height of Receptacle</option>
+                    <option value="Height of Load Panel">Height of Load Panel</option>
+                    <option value="Custom height#1">Custom height#1</option>
+                    <option value="Custom height#2">Custom height#2</option>
+                </select>
+            </div>
         </div>
     </div>
 
@@ -1151,9 +1187,23 @@
             sketchup.selectWire(selectedWireIndex);
         }
 
+        function onLevelParameterChange() {
+            var select = document.getElementById('level-parameter');
+            var selectedLevel = select.value;
+            sketchup.setLevelParameter(selectedLevel);
+        }
+
         // =============================================
         // UI HELPERS
         // =============================================
+        function togglePreview() {
+            var body = document.getElementById('preview-body');
+            var toggle = document.getElementById('preview-toggle');
+            body.classList.toggle('collapsed');
+            toggle.classList.toggle('collapsed');
+            autoFit();
+        }
+
         function togglePanel(id) {
             const body = document.getElementById('panel-' + id);
             const toggle = document.getElementById('toggle-' + id);
