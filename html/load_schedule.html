@@ -43,6 +43,7 @@
         .header-info td {
             font-size: 10px;
             padding: 2px 6px;
+            position: relative;
         }
 
         .header-info .label {
@@ -66,9 +67,25 @@
             background: #f0f7ff;
         }
 
+        .header-resizer {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 5px;
+            height: 100%;
+            cursor: col-resize;
+            z-index: 10;
+        }
+
+        .header-resizer:hover,
+        .header-resizer.active {
+            background: rgba(0,102,214,0.3);
+        }
+
         .circuit-table {
             width: 100%;
             border-collapse: collapse;
+            table-layout: fixed;
         }
 
         .circuit-table th,
@@ -79,6 +96,9 @@
             font-size: 9px;
             vertical-align: middle;
             height: 24px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .circuit-table th {
@@ -107,19 +127,22 @@
         }
 
         .toolbar {
-            margin-bottom: 6px;
+            margin-bottom: 3px;
             display: flex;
-            gap: 6px;
+            gap: 3px;
+            align-items: center;
         }
 
         .toolbar button {
-            padding: 4px 10px;
-            font-size: 11px;
+            padding: 1px 6px;
+            font-size: 9px;
             border: 1px solid #999;
             background: #f0f0f0;
             cursor: pointer;
             font-family: inherit;
             border-radius: 2px;
+            line-height: 1.4;
+            white-space: nowrap;
         }
 
         .toolbar button:hover {
@@ -185,89 +208,198 @@
             width: 100%;
             padding: 1px 2px;
         }
+
+        .toolbar button.active {
+            background: #0066d6;
+            color: #fff;
+            border-color: #004a9e;
+        }
+
+        .swap-pick {
+            cursor: pointer;
+        }
+
+        .swap-pick:hover {
+            background: #ffe0b2 !important;
+        }
+
+        .swap-selected {
+            background: #ff9800 !important;
+            outline: 2px solid #e65100;
+            outline-offset: -2px;
+        }
+
+        .span-group-cell {
+            vertical-align: middle !important;
+            padding: 0 3px !important;
+        }
+
+        .span-group-cell .cell-wrap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: pre-line;
+            word-break: break-all;
+            line-height: 1.3;
+            padding: 0 3px;
+        }
+
+        .col-resizer {
+            position: absolute;
+            top: 0;
+            right: -3px;
+            width: 6px;
+            height: 100%;
+            cursor: col-resize;
+            z-index: 10;
+        }
+
+        .col-resizer:hover,
+        .col-resizer.active {
+            background: rgba(0,102,214,0.3);
+        }
+
+        .circuit-table th {
+            position: relative;
+        }
+
+        .row-resizer {
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            cursor: row-resize;
+            z-index: 10;
+        }
+
+        .row-resizer:hover,
+        .row-resizer.active {
+            background: rgba(0,102,214,0.3);
+        }
+
+        .circuit-table tbody td {
+            position: relative;
+        }
     </style>
 </head>
 
 <body>
 
     <div class="toolbar">
-        <button onclick="requestData()">โหลดข้อมูลใหม่</button>
-        <button onclick="exportToCSV()">ส่งออก CSV</button>
-        <button onclick="window.print()">พิมพ์</button>
+        <button onclick="requestData()">Import SU Circuit</button>
+        <button onclick="exportToCSV()">Export CSV</button>
+        <button onclick="window.print()">Print PDF</button>
+        <span style="border-left:1px solid #999; margin:0 4px;"></span>
+        <button onclick="doAutoBalance()" title="ปรับสมดุลโหลดอัตโนมัติ">⚡ Auto Balance</button>
+        <button id="btnSwap" onclick="toggleSwapMode()" title="เลือก 2 วงจรเพื่อสลับตำแหน่ง">🔄 Manual Swap</button>
+        <button onclick="doUpdateNames()" title="อัพเดทชื่อ LP-N ให้ตรงกับ Circuit No. และอัพเดทชื่อ Group ใน Model">📝 Update LP-N to SU</button>
+        <button id="btnSave" onclick="doSaveArrangement()" title="บันทึกการจัดเรียงวงจรลงใน Model">💾 Save Edited Load Data</button>
+        <span id="swapStatus" style="font-size:10px; color:#666; align-self:center;"></span>
     </div>
 
     <table class="main-table" id="mainTable">
         <!-- ===== Title ===== -->
         <tr class="title-row">
-            <td colspan="30">ตารางรายการโหลด</td>
+            <td colspan="31">ตารางรายการโหลด</td>
         </tr>
 
         <!-- ===== Header Row 1 ===== -->
         <tr class="header-info">
             <td colspan="4"><span class="label">เลขที่แผงย่อย</span></td>
-            <td colspan="5"><input type="text" id="panelName" value="LC1"></td>
-            <td colspan="4"><span class="label">เบรกเกอร์วงจรย่อย</span></td>
-            <td colspan="7"><input type="text" id="subBreakerRating" value="IC. > 6 KA. at 240 V.ac., 415 V.ac."></td>
-            <td colspan="4"><span class="label">สถานที่ติดตั้ง</span></td>
-            <td colspan="3"><span class="label">ตามแบบ</span></td>
+            <td colspan="10"><input type="text" id="panelName" value="LC1"></td>
+            <td colspan="1"><span class="label">เบรกเกอร์วงจรย่อย</span></td>
+            <td colspan="8"><input type="text" id="subBreakerRating" value="IC. > 6 KA. at 240 V.ac., 415 V.ac."></td>
+            <td colspan="1"><span class="label">สถานที่ติดตั้ง</span></td>
+            <td colspan="1"><input type="text" id="installLocation" value=""></td>
             <td colspan="3"><input type="text" id="drawingRef" value=""></td>
         </tr>
         <!-- ===== Header Row 2 ===== -->
         <tr class="header-info">
             <td colspan="4"><span class="label">ระบบไฟฟ้า</span></td>
-            <td colspan="5"><input type="text" id="systemType" value="3 Ø 4 WIRE WITH GROUND 380/220 V.ac. 50 Hz"></td>
-            <td colspan="4"><span class="label">จำนวนวงจรสูงสุด</span></td>
-            <td colspan="7"><input type="text" id="maxCircuits" value="18 วงจร"></td>
-            <td colspan="4"><span class="label">พิกัดกระแสบาร์</span></td>
-            <td colspan="3"><input type="text" id="busbarRating" value="> 100 A."></td>
-            <td colspan="3"><span class="label">เลขที่แบบ</span> <input type="text" id="drawingNo" value="-"
-                    style="width:50px;"></td>
+            <td colspan="10"><input type="text" id="systemType" value="3 Ø 4 WIRE WITH GROUND 380/220 V.ac. 50 Hz"></td>
+            <td colspan="1"><span class="label">จำนวนวงจรสูงสุด</span></td>
+            <td colspan="4"><input type="text" id="maxCircuits" value="30 วงจร"></td>
+            <td colspan="3"><span class="label">พิกัดกระแสบาร์</span></td>
+            <td colspan="4"><input type="text" id="busbarRating" value="> 100 A."></td>
+            <td colspan="1"><span class="label">เลขที่แบบ</span></td>
+            <td colspan="5"><input type="text" id="drawingNo" value="-"></td>
         </tr>
         <!-- ===== Header Row 3 ===== -->
         <tr class="header-info">
             <td colspan="4"><span class="label">ระดับป้องกัน</span></td>
-            <td colspan="5"><input type="text" id="protectionLevel" value="NEMA TYPE 1"></td>
-            <td colspan="21"></td>
+            <td colspan="10"><input type="text" id="protectionLevel" value="NEMA TYPE 1"></td>
+            <td colspan="17"></td>
         </tr>
 
         <!-- ===== Circuit Table ===== -->
         <tr>
-            <td colspan="30" style="padding:0; border:none;">
+            <td colspan="31" style="padding:0; border:none;">
                 <table class="circuit-table" id="circuitTable">
+                    <colgroup>
+                        <col style="width:120px"><!-- 0: รายการ L -->
+                        <col data-resizable="1"><!-- 1: SIZE L (auto-fit) -->
+                        <col style="width:30px"><!-- 2: TYPE L -->
+                        <col style="width:45px"><!-- 3: ท่อ L -->
+                        <col style="width:28px"><!-- 4: POLE L -->
+                        <col style="width:28px"><!-- 5: AT L -->
+                        <col style="width:38px"><!-- 6: R -->
+                        <col style="width:38px"><!-- 7: S -->
+                        <col style="width:38px"><!-- 8: T -->
+                        <col style="width:30px"><!-- 9: เลขที่ L -->
+                        <col style="width:140px"><!-- 10: SLD -->
+                        <col style="width:30px"><!-- 11: เลขที่ R -->
+                        <col style="width:38px"><!-- 12: R -->
+                        <col style="width:38px"><!-- 13: S -->
+                        <col style="width:38px"><!-- 14: T -->
+                        <col style="width:28px"><!-- 15: POLE R -->
+                        <col style="width:28px"><!-- 16: AT R -->
+                        <col style="width:45px"><!-- 17: ท่อ R -->
+                        <col data-resizable="1"><!-- 18: SIZE R (auto-fit) -->
+                        <col style="width:30px"><!-- 19: TYPE R -->
+                        <col style="width:120px"><!-- 20: รายการ R -->
+                    </colgroup>
                     <thead>
                         <tr>
-                            <!-- LEFT 9 cols -->
-                            <th rowspan="2" style="width:90px;">รายการ</th>
+                            <!-- LEFT 10 cols -->
+                            <th rowspan="2">รายการ</th>
                             <th colspan="2">สายไฟ</th>
-                            <th rowspan="2" style="width:50px;">ท่อ<br>(ø IN)</th>
+                            <th rowspan="2">ท่อ<br>(ø IN)</th>
                             <th colspan="2">เบรกเกอร์</th>
-                            <th colspan="3">เลขที่</th>
+                            <th colspan="3">VA</th>
+                            <th rowspan="2">เลขที่</th>
                             <!-- CENTER 1 col -->
-                            <th rowspan="2" style="width:130px;">ไดอะแกรม</th>
+                            <th rowspan="2">ไดอะแกรม</th>
                             <!-- RIGHT 10 cols -->
-                            <th rowspan="2" style="width:30px;">เลขที่</th>
-                            <th colspan="3" style="min-width:60px;">VA</th>
+                            <th rowspan="2">เลขที่</th>
+                            <th colspan="3">VA</th>
                             <th colspan="2">เบรกเกอร์</th>
-                            <th rowspan="2" style="width:50px;">ท่อ<br>(ø IN)</th>
+                            <th rowspan="2">ท่อ<br>(ø IN)</th>
                             <th colspan="2">สายไฟ</th>
-                            <th rowspan="2" style="width:90px;">รายการ</th>
+                            <th rowspan="2">รายการ</th>
                         </tr>
                         <tr class="sub-header">
-                            <th style="width:70px;">SIZE (Sq.mm.)</th>
-                            <th style="width:35px;">TYPE</th>
-                            <th style="width:30px;">POLE</th>
-                            <th style="width:30px;">AT</th>
-                            <th style="width:30px;">A</th>
-                            <th style="width:30px;">B</th>
-                            <th style="width:30px;">C</th>
+                            <th>SIZE (Sq.mm.)</th>
+                            <th>TYPE</th>
+                            <th>POLE</th>
+                            <th>AT</th>
+                            <th>R</th>
+                            <th>S</th>
+                            <th>T</th>
                             <!-- right sub -->
-                            <th style="width:35px;">A</th>
-                            <th style="width:35px;">B</th>
-                            <th style="width:35px;">C</th>
-                            <th style="width:30px;">POLE</th>
-                            <th style="width:30px;">AT</th>
-                            <th style="width:70px;">SIZE (Sq.mm.)</th>
-                            <th style="width:35px;">TYPE</th>
+                            <th>R</th>
+                            <th>S</th>
+                            <th>T</th>
+                            <th>POLE</th>
+                            <th>AT</th>
+                            <th>SIZE (Sq.mm.)</th>
+                            <th>TYPE</th>
                         </tr>
                     </thead>
                     <tbody id="circuitBody"></tbody>
@@ -277,7 +409,8 @@
                             <td id="sumA_L">-</td>
                             <td id="sumB_L">-</td>
                             <td id="sumC_L">-</td>
-                            <td style="font-size:9px;">A&emsp;&emsp;B&emsp;&emsp;C</td>
+                            <td></td>
+                            <td style="font-size:9px; font-weight:bold;">R&emsp;&emsp;S&emsp;&emsp;T</td>
                             <td></td>
                             <td id="sumA_R">-</td>
                             <td id="sumB_R">-</td>
@@ -285,13 +418,13 @@
                             <td colspan="6"></td>
                         </tr>
                         <tr>
-                            <td colspan="9" style="text-align:center; font-weight:bold;">รวมโหลดทั้งหมด (VA.)</td>
-                            <td id="totalVA_A" style="text-align:center; font-weight:bold;">-</td>
+                            <td colspan="10" style="text-align:center; font-weight:bold;">รวมโหลดทั้งหมด (VA.)</td>
                             <td></td>
+                            <td></td>
+                            <td id="totalVA_A" style="text-align:center; font-weight:bold;">-</td>
                             <td id="totalVA_B" style="text-align:center; font-weight:bold;">-</td>
-                            <td colspan="2"></td>
                             <td id="totalVA_C" style="text-align:center; font-weight:bold;">-</td>
-                            <td colspan="5"></td>
+                            <td colspan="6"></td>
                         </tr>
                     </tfoot>
                 </table>
@@ -308,33 +441,33 @@
                 </select>
             </td>
             <td colspan="6"><span class="label" style="font-weight:bold;">กระแสออกแบบ (I<sub>d</sub>) × 1.25</span></td>
-            <td colspan="7"><input type="text" id="designCurrent" class="calc-result" value="-" readonly></td>
+            <td colspan="8"><input type="text" id="designCurrent" class="calc-result" value="-" readonly></td>
             <td colspan="4"><span class="label" style="font-weight:bold;">ขนาด Main Breaker (วสท.)</span></td>
             <td colspan="6"><input type="text" id="mainBreakerCalc" class="calc-result" value="-" readonly style="font-size:11px;"></td>
         </tr>
 
         <!-- ===== Footer Summary ===== -->
         <tr class="header-info">
-            <td colspan="4"><span class="label">กระแสเฟส A</span></td>
+            <td colspan="4"><span class="label">กระแสเฟส R (Brown)</span></td>
             <td colspan="3"><input type="text" id="currentA" value="-" readonly></td>
             <td colspan="6"><span class="label">เมนเบรกเกอร์ (TYPE)</span></td>
-            <td colspan="7"><input type="text" id="mainBreakerType" value="MOLDED CASE-THERMAL MAGNETIC TYPE"></td>
+            <td colspan="8"><input type="text" id="mainBreakerType" value="MOLDED CASE-THERMAL MAGNETIC TYPE"></td>
             <td colspan="4"><span class="label">ขนาดสายป้อน</span></td>
             <td colspan="6"><input type="text" id="feederWire" value="-" readonly></td>
         </tr>
         <tr class="header-info">
-            <td colspan="4"><span class="label">กระแสเฟส B</span></td>
+            <td colspan="4"><span class="label">กระแสเฟส S (Black)</span></td>
             <td colspan="3"><input type="text" id="currentB" value="-" readonly></td>
             <td colspan="6"><span class="label">ตำแหน่งติดตั้ง (ตอนบน,ตอนล่าง)</span></td>
-            <td colspan="7"><input type="text" id="mountPosition" value="ตอนบน"></td>
+            <td colspan="8"><input type="text" id="mountPosition" value="ตอนบน"></td>
             <td colspan="4"><span class="label">ขนาดท่อร้อยสายป้อน</span></td>
             <td colspan="6"><input type="text" id="feederConduit" value="-" readonly></td>
         </tr>
         <tr class="header-info">
-            <td colspan="4"><span class="label">กระแสเฟส C</span></td>
+            <td colspan="4"><span class="label">กระแสเฟส T (Grey)</span></td>
             <td colspan="3"><input type="text" id="currentC" value="-" readonly></td>
             <td colspan="6"><span class="label">Main Breaker</span></td>
-            <td colspan="7"><input type="text" id="mainBreakerSpec" value="-" readonly></td>
+            <td colspan="8"><input type="text" id="mainBreakerSpec" value="-" readonly></td>
             <td colspan="4"><span class="label">ลงวันที่</span></td>
             <td colspan="6"><input type="text" id="dateField" value="-"></td>
         </tr>
@@ -342,61 +475,73 @@
 
     <script>
         const sketchup = window.sketchup;
-        const MAX_ROWS = 9; // 18 circuits => 9 rows
+        const MAX_ROWS = 15; // 30 circuits => 15 rows
         let currentSelectedId = null; // Track single selected entity ID
 
+        // ===== Swap Mode State =====
+        let swapMode = false;
+        let swapSelections = []; // array of up to 2 selected circuit_no values
+
         // Generate SVG single-line diagram
+        // Each circuit connects to the busbar matching its phase:
+        //   ((slot-1)/2)%3 => 0=R, 1=S, 2=T
         function generateSLD(numRows) {
             const rowH = 24;
-            const totalH = numRows * rowH + 40;
+            const totalH = numRows * rowH + 30;
             const cx = 65;
-            const busStart = 22;
-            const pg = 7;
+            const busStart = 14;
+            const pg = 8; // spacing between busbars
+
+            // Busbar X positions: R(left), S(center), T(right)
+            const busR = cx - pg;
+            const busS = cx;
+            const busT = cx + pg;
+            const busX = [busR, busS, busT]; // indexed by phase 0,1,2
 
             let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 130 ${totalH}" style="width:100%;height:${totalH}px;">`;
 
-            // Main breaker box
-            s += `<rect x="${cx - 14}" y="2" width="28" height="14" fill="#333" rx="2"/>`;
-            s += `<text x="${cx}" y="11" text-anchor="middle" fill="#fff" font-size="7" font-family="Tahoma">S/N</text>`;
+            // Phase labels at top (R, S, T) — bold and clear
+            s += `<text x="${busR}" y="${busStart}" text-anchor="middle" font-size="8" font-weight="bold" font-family="Tahoma">R</text>`;
+            s += `<text x="${busS}" y="${busStart}" text-anchor="middle" font-size="8" font-weight="bold" font-family="Tahoma">S</text>`;
+            s += `<text x="${busT}" y="${busStart}" text-anchor="middle" font-size="8" font-weight="bold" font-family="Tahoma">T</text>`;
 
-            // Phase labels
-            s += `<text x="${cx - pg}" y="${busStart + 7}" text-anchor="middle" font-size="6" font-family="Tahoma">ØA</text>`;
-            s += `<text x="${cx}" y="${busStart + 7}" text-anchor="middle" font-size="6" font-family="Tahoma">ØB</text>`;
-            s += `<text x="${cx + pg}" y="${busStart + 7}" text-anchor="middle" font-size="6" font-family="Tahoma">ØC</text>`;
+            // Bus bars (3 vertical lines)
+            const bTop = busStart + 3;
+            const bEnd = totalH - 18;
+            s += `<line x1="${busR}" y1="${bTop}" x2="${busR}" y2="${bEnd}" stroke="#000" stroke-width="1.2"/>`;
+            s += `<line x1="${busS}" y1="${bTop}" x2="${busS}" y2="${bEnd}" stroke="#000" stroke-width="1.2"/>`;
+            s += `<line x1="${busT}" y1="${bTop}" x2="${busT}" y2="${bEnd}" stroke="#000" stroke-width="1.2"/>`;
 
-            // Bus bars
-            const bEnd = totalH - 20;
-            s += `<line x1="${cx - pg}" y1="${busStart + 9}" x2="${cx - pg}" y2="${bEnd}" stroke="#000" stroke-width="1.5"/>`;
-            s += `<line x1="${cx}" y1="${busStart + 9}" x2="${cx}" y2="${bEnd}" stroke="#000" stroke-width="1.5"/>`;
-            s += `<line x1="${cx + pg}" y1="${busStart + 9}" x2="${cx + pg}" y2="${bEnd}" stroke="#000" stroke-width="1.5"/>`;
-
-            // Branches
+            // Branches — each circuit connects to the correct busbar
             for (let i = 0; i < numRows; i++) {
-                const y = busStart + 14 + i * rowH;
-                const oddN = i * 2 + 1;
-                const evenN = i * 2 + 2;
+                const y = bTop + 6 + i * rowH;
+                const oddN = i * 2 + 1;   // left circuit number
+                const evenN = i * 2 + 2;  // right circuit number
 
-                // Left branch
-                s += `<line x1="12" y1="${y}" x2="${cx - pg - 3}" y2="${y}" stroke="#000" stroke-width="0.7"/>`;
-                s += `<circle cx="${cx - pg - 7}" cy="${y}" r="2" fill="none" stroke="#000" stroke-width="0.7"/>`;
-                s += `<text x="7" y="${y + 3}" text-anchor="end" font-size="7" font-family="Tahoma">${oddN}</text>`;
+                // Phase index: ((slot-1)/2) % 3
+                const phaseL = Math.floor((oddN - 1) / 2) % 3;
+                const phaseR = Math.floor((evenN - 1) / 2) % 3;
+                const bxL = busX[phaseL];
+                const bxR = busX[phaseR];
 
-                // Right branch
-                s += `<line x1="${cx + pg + 3}" y1="${y}" x2="118" y2="${y}" stroke="#000" stroke-width="0.7"/>`;
-                s += `<circle cx="${cx + pg + 7}" cy="${y}" r="2" fill="none" stroke="#000" stroke-width="0.7"/>`;
-                s += `<text x="122" y="${y + 3}" text-anchor="start" font-size="7" font-family="Tahoma">${evenN}</text>`;
+                // Left branch: line from left edge to busbar, hollow circle on busbar
+                s += `<line x1="10" y1="${y}" x2="${bxL}" y2="${y}" stroke="#000" stroke-width="0.7"/>`;
+                s += `<circle cx="${bxL}" cy="${y}" r="2.8" fill="none" stroke="#000" stroke-width="0.8"/>`;
+                s += `<text x="6" y="${y + 3}" text-anchor="end" font-size="7" font-family="Tahoma">${oddN}</text>`;
+
+                // Right branch: line from busbar to right edge, hollow circle on busbar
+                s += `<line x1="${bxR}" y1="${y}" x2="120" y2="${y}" stroke="#000" stroke-width="0.7"/>`;
+                s += `<circle cx="${bxR}" cy="${y}" r="2.8" fill="none" stroke="#000" stroke-width="0.8"/>`;
+                s += `<text x="124" y="${y + 3}" text-anchor="start" font-size="7" font-family="Tahoma">${evenN}</text>`;
             }
-
-            // Ground bus
-            s += `<line x1="${cx - 18}" y1="${bEnd + 4}" x2="${cx + 18}" y2="${bEnd + 4}" stroke="#000" stroke-width="1.5"/>`;
-            s += `<text x="${cx}" y="${bEnd + 14}" text-anchor="middle" font-size="6" font-family="Tahoma">GROUND BUS</text>`;
 
             s += `</svg>`;
             return s;
         }
 
         function emptyCircuit(n) {
-            return { circuit_no: n, name: 'SPACE', wire_size: '-', wire_type: '-', conduit: '-', breaker_pole: '-', breaker_at: '-', va_a: '-', va_b: '-', va_c: '-', text_color: '#000' };
+            const p = Math.floor((n - 1) / 2) % 3;
+            return { circuit_no: n, name: 'SPACE', wire_size: '-', wire_type: '-', conduit: '-', breaker_pole: '-', breaker_at: '-', va_a: p === 0 ? '-' : '', va_b: p === 1 ? '-' : '', va_c: p === 2 ? '-' : '', text_color: '#000', span_group: null, span_position: 0, span_size: 1 };
         }
 
         function val(v) { return (v === '' || v === undefined || v === null || v === 0) ? '-' : v; }
@@ -413,7 +558,7 @@
                 R.push(emptyCircuit(i * 2 + 2));
             }
 
-            // Map data — Ruby now sends data in the exact format we expect
+            // Map data into slot arrays
             if (data && data.length > 0) {
                 data.forEach(c => {
                     if (!c) return;
@@ -421,6 +566,19 @@
                     const idx = Math.floor((n - 1) / 2);
                     if (idx < 0 || idx >= MAX_ROWS) return;
                     const target = (n % 2 === 1) ? L : R;
+                    // Determine active phase: ((slot-1)/2) % 3 => 0=R, 1=S, 2=T
+                    const phaseIdx = Math.floor((n - 1) / 2) % 3;
+                    const is3Phase = c.span_group || (c.span_size && c.span_size > 1);
+                    function vaCell(raw, isActive) {
+                        if (is3Phase) {
+                            const num = parseFloat(raw);
+                            return (!isNaN(num) && num !== 0) ? raw : '';
+                        }
+                        if (!isActive) return '';
+                        const num = parseFloat(raw);
+                        return (!isNaN(num) && num !== 0) ? raw : '-';
+                    }
+
                     target[idx] = {
                         circuit_no: n,
                         name: c.name || c.circuit_name || 'SPACE',
@@ -429,37 +587,33 @@
                         conduit: val(c.conduit),
                         breaker_pole: val(c.breaker_pole),
                         breaker_at: val(c.breaker_at),
-                        va_a: val(c.va_a),
-                        va_b: val(c.va_b),
-                        va_c: val(c.va_c),
-                        va_c: val(c.va_c),
-                        text_color: c.text_color, // Pass color through
-                        entity_id: c.entity_id // Store ID
+                        va_a: vaCell(c.va_a, phaseIdx === 0),
+                        va_b: vaCell(c.va_b, phaseIdx === 1),
+                        va_c: vaCell(c.va_c, phaseIdx === 2),
+                        text_color: c.text_color,
+                        entity_id: c.entity_id,
+                        span_group: c.span_group || null,
+                        span_position: c.span_position || 0,
+                        span_size: c.span_size || 1
                     };
                 });
             }
 
-            // Build rows using DOM (not innerHTML) to preserve rowSpan
+            // Track which span_groups already had their first row rendered
+            const renderedSpanGroups = {};
+
+            // Build rows using DOM
             const sldHTML = generateSLD(MAX_ROWS);
 
             for (let i = 0; i < MAX_ROWS; i++) {
                 const tr = document.createElement('tr');
                 const l = L[i], r = R[i];
 
-                // Use persistent color from Ruby, fallback to black
                 const colorL = (l.name !== 'SPACE') ? (l.text_color || '#000') : '#000';
                 const colorR = (r.name !== 'SPACE') ? (r.text_color || '#000') : '#000';
 
-                // === LEFT SIDE (9 cells) ===
-                addCell(tr, l.name, 'la', colorL, l.entity_id);
-                addCell(tr, l.wire_size, '', colorL);
-                addCell(tr, l.wire_type, '', colorL);
-                addCell(tr, l.conduit, '', colorL);
-                addCell(tr, l.breaker_pole, '', colorL);
-                addCell(tr, l.breaker_at, '', colorL);
-                addCell(tr, l.va_a, '', colorL);
-                addCell(tr, l.va_b, '', colorL);
-                addCell(tr, l.va_c, '', colorL);
+                // === LEFT SIDE ===
+                buildSideCells(tr, l, colorL, renderedSpanGroups, 'left');
 
                 // === CENTER SLD (only row 0 with rowSpan) ===
                 if (i === 0) {
@@ -470,17 +624,8 @@
                     tr.appendChild(sldTd);
                 }
 
-                // === RIGHT SIDE (10 cells) ===
-                addCell(tr, r.circuit_no, '', colorR);
-                addCell(tr, r.va_a, '', colorR);
-                addCell(tr, r.va_b, '', colorR);
-                addCell(tr, r.va_c, '', colorR);
-                addCell(tr, r.breaker_pole, '', colorR);
-                addCell(tr, r.breaker_at, '', colorR);
-                addCell(tr, r.conduit, '', colorR);
-                addCell(tr, r.wire_size, '', colorR);
-                addCell(tr, r.wire_type, '', colorR);
-                addCell(tr, r.name, 'la', colorR, r.entity_id); // FIXED: Added r.entity_id
+                // === RIGHT SIDE ===
+                buildSideCells(tr, r, colorR, renderedSpanGroups, 'right');
 
                 body.appendChild(tr);
             }
@@ -489,21 +634,101 @@
             autoFit();
         }
 
-        function addCell(tr, text, cls, color, id) {
+        // Build cells for one side of a row, handling 3-phase rowSpan
+        function buildSideCells(tr, c, color, renderedSpanGroups, side) {
+            const isSpan = c.span_group && c.span_size > 1;
+            const isFirstOfSpan = isSpan && c.span_position === 0;
+            const isContOfSpan = isSpan && c.span_position > 0;
+            const spanKey = c.span_group + '_' + side;
+
+            if (isFirstOfSpan) {
+                renderedSpanGroups[spanKey] = true;
+            }
+
+            // Shared cells: name, wire_size, wire_type, conduit, breaker_pole, breaker_at
+            // These get rowSpan on first row of a 3-phase group; skipped on continuation rows
+            const sn = c.circuit_no; // slot number for data-slot tagging
+            const cellsBefore = tr.cells.length;
+            if (side === 'left') {
+                if (isContOfSpan) {
+                    addCell(tr, c.va_a, '', color, null, undefined, sn);
+                    addCell(tr, c.va_b, '', color, null, undefined, sn);
+                    addCell(tr, c.va_c, '', color, null, undefined, sn);
+                    addCell(tr, c.circuit_no, '', color, null, undefined, sn);
+                } else {
+                    const rs = isFirstOfSpan ? c.span_size : undefined;
+                    addCell(tr, c.name, 'la', color, c.entity_id, rs, sn);
+                    addCell(tr, c.wire_size, '', color, null, rs, sn);
+                    addCell(tr, c.wire_type, '', color, null, rs, sn);
+                    addCell(tr, c.conduit, '', color, null, rs, sn);
+                    addCell(tr, c.breaker_pole, '', color, null, rs, sn);
+                    addCell(tr, c.breaker_at, '', color, null, rs, sn);
+                    addCell(tr, c.va_a, '', color, null, undefined, sn);
+                    addCell(tr, c.va_b, '', color, null, undefined, sn);
+                    addCell(tr, c.va_c, '', color, null, undefined, sn);
+                    addCell(tr, c.circuit_no, '', color, null, undefined, sn);
+                }
+            } else {
+                // Right side (mirrored column order)
+                if (isContOfSpan) {
+                    addCell(tr, c.circuit_no, '', color, null, undefined, sn);
+                    addCell(tr, c.va_a, '', color, null, undefined, sn);
+                    addCell(tr, c.va_b, '', color, null, undefined, sn);
+                    addCell(tr, c.va_c, '', color, null, undefined, sn);
+                } else {
+                    const rs = isFirstOfSpan ? c.span_size : undefined;
+                    addCell(tr, c.circuit_no, '', color, null, undefined, sn);
+                    addCell(tr, c.va_a, '', color, null, undefined, sn);
+                    addCell(tr, c.va_b, '', color, null, undefined, sn);
+                    addCell(tr, c.va_c, '', color, null, undefined, sn);
+                    addCell(tr, c.breaker_pole, '', color, null, rs, sn);
+                    addCell(tr, c.breaker_at, '', color, null, rs, sn);
+                    addCell(tr, c.conduit, '', color, null, rs, sn);
+                    addCell(tr, c.wire_size, '', color, null, rs, sn);
+                    addCell(tr, c.wire_type, '', color, null, rs, sn);
+                    addCell(tr, c.name, 'la', color, c.entity_id, rs, sn);
+                }
+            }
+
+            // Tag newly added cells with span-group for swap highlighting
+            if (c.span_group) {
+                var sgKey = c.span_group + '_' + side;
+                for (var ci = cellsBefore; ci < tr.cells.length; ci++) {
+                    tr.cells[ci].setAttribute('data-span-group', sgKey);
+                }
+            }
+        }
+
+        function addCell(tr, text, cls, color, id, rowSpanVal, slotNo) {
             const td = document.createElement('td');
-            td.textContent = text;
             if (cls) td.className = cls;
             if (color) td.style.color = color;
+            if (rowSpanVal && rowSpanVal > 1) {
+                td.rowSpan = rowSpanVal;
+                td.classList.add('span-group-cell');
+                const wrap = document.createElement('div');
+                wrap.className = 'cell-wrap';
+                wrap.textContent = text;
+                td.appendChild(wrap);
+            } else {
+                td.textContent = text;
+            }
+
+            if (slotNo !== undefined) {
+                td.setAttribute('data-slot', slotNo);
+            }
 
             if (id) {
                 td.classList.add('clickable');
                 td.setAttribute('data-entity-id', id);
-                // Restore selected state if previously selected
                 if (currentSelectedId === String(id)) {
                     td.classList.add('selected');
                 }
                 td.title = "Click to Select/Unselect in Model";
-                td.onclick = function () { toggleCircuit(id, td); };
+                td.onclick = function () {
+                    if (swapMode) return;
+                    toggleCircuit(id, td);
+                };
             }
 
             tr.appendChild(td);
@@ -513,7 +738,6 @@
             const idStr = String(id);
             const wasSame = (currentSelectedId === idStr);
 
-            // Clear previous selection highlight
             if (currentSelectedId) {
                 document.querySelectorAll('[data-entity-id="' + currentSelectedId + '"]').forEach(function(el) {
                     el.classList.remove('selected');
@@ -521,7 +745,6 @@
             }
 
             if (wasSame) {
-                // Click same circuit again => deselect
                 currentSelectedId = null;
                 if (window.sketchup) {
                     sketchup.toggleCircuit(idStr, false);
@@ -529,7 +752,6 @@
                     console.log("Deselect circuit: " + id);
                 }
             } else {
-                // Select new circuit (deselect previous first)
                 currentSelectedId = idStr;
                 document.querySelectorAll('[data-entity-id="' + id + '"]').forEach(function(el) {
                     el.classList.add('selected');
@@ -542,12 +764,158 @@
             }
         }
 
+        // ===== Swap Mode =====
+        function toggleSwapMode() {
+            const btn = document.getElementById('btnSwap');
+            const status = document.getElementById('swapStatus');
+
+            if (!swapMode) {
+                // --- Enter swap mode ---
+                swapMode = true;
+                swapSelections = [];
+                btn.classList.add('active');
+                updateSwapUI();
+                enableSwapClicks();
+            } else {
+                // --- 2nd press: execute if 2 selected, otherwise cancel ---
+                if (swapSelections.length === 2) {
+                    const slotA = swapSelections[0];
+                    const slotB = swapSelections[1];
+                    status.textContent = 'กำลังสลับวงจร ' + slotA + ' ↔ ' + slotB + '...';
+                    if (window.sketchup) {
+                        sketchup.swapCircuits(slotA, slotB);
+                    } else {
+                        console.log('Swap circuits: ' + slotA + ' <-> ' + slotB);
+                    }
+                }
+                // Exit swap mode
+                swapMode = false;
+                swapSelections = [];
+                btn.classList.remove('active');
+                btn.textContent = '🔄 Manual Swap';
+                status.textContent = '';
+                disableSwapClicks();
+            }
+        }
+
+        function updateSwapUI() {
+            const btn = document.getElementById('btnSwap');
+            const status = document.getElementById('swapStatus');
+            const count = swapSelections.length;
+            btn.textContent = '🔄 Manual Swap (เลือก ' + count + '/2)';
+            if (count === 0) {
+                status.textContent = 'คลิกเลือกรายการที่ 1...';
+            } else if (count === 1) {
+                status.textContent = 'เลือกวงจร ' + swapSelections[0] + ' แล้ว → คลิกเลือกรายการที่ 2...';
+            } else {
+                status.textContent = 'เลือกครบ 2 รายการ (วงจร ' + swapSelections[0] + ' ↔ ' + swapSelections[1] + ') → กด Manual Swap อีกครั้งเพื่อสลับ';
+            }
+        }
+
+        function enableSwapClicks() {
+            const body = document.getElementById('circuitBody');
+            // Group cells by data-slot
+            for (let slot = 1; slot <= MAX_ROWS * 2; slot++) {
+                const cells = Array.from(body.querySelectorAll('td[data-slot="' + slot + '"]'));
+                if (cells.length === 0) continue;
+                cells.forEach(td => {
+                    td.classList.add('swap-pick');
+                    td._swapHandler = function(e) {
+                        e.stopPropagation();
+                        onSwapRowClick(slot, cells);
+                    };
+                    td.addEventListener('click', td._swapHandler);
+                });
+            }
+        }
+
+        function disableSwapClicks() {
+            const body = document.getElementById('circuitBody');
+            body.querySelectorAll('.swap-pick').forEach(td => {
+                td.classList.remove('swap-pick', 'swap-selected');
+                if (td._swapHandler) {
+                    td.removeEventListener('click', td._swapHandler);
+                    delete td._swapHandler;
+                }
+            });
+        }
+
+        function onSwapRowClick(slotNo, sideCells) {
+            if (!swapMode) return;
+            var body = document.getElementById('circuitBody');
+
+            // Check if this slot belongs to a span group (3-phase)
+            var spanGroup = sideCells.length > 0 ? sideCells[0].getAttribute('data-span-group') : null;
+            var allCells = spanGroup
+                ? Array.from(body.querySelectorAll('td[data-span-group="' + spanGroup + '"]'))
+                : sideCells;
+
+            // Check if this slot or its span group is already selected
+            var existingIdx = swapSelections.indexOf(slotNo);
+            if (existingIdx < 0 && spanGroup) {
+                existingIdx = swapSelections.findIndex(function(s) {
+                    return !!body.querySelector('td[data-slot="' + s + '"][data-span-group="' + spanGroup + '"]');
+                });
+            }
+
+            if (existingIdx >= 0) {
+                // Deselect
+                swapSelections.splice(existingIdx, 1);
+                allCells.forEach(function(td) { td.classList.remove('swap-selected'); });
+            } else if (swapSelections.length < 2) {
+                // Select
+                swapSelections.push(slotNo);
+                allCells.forEach(function(td) { td.classList.add('swap-selected'); });
+            }
+            updateSwapUI();
+        }
+
+        function doAutoBalance() {
+            if (window.sketchup) {
+                sketchup.autoBalance();
+            } else {
+                console.log('Auto Balance requested (no SketchUp connection)');
+            }
+        }
+
+        function doUpdateNames() {
+            if (window.sketchup) {
+                sketchup.updateNames();
+            } else {
+                console.log('Update Names requested (no SketchUp connection)');
+            }
+        }
+
+        function doSaveArrangement() {
+            if (window.sketchup) {
+                sketchup.saveArrangement();
+            } else {
+                console.log('Save Arrangement requested (no SketchUp connection)');
+                onSaveComplete();
+            }
+        }
+
+        function onSaveComplete() {
+            var btn = document.getElementById('btnSave');
+            if (btn) {
+                var orig = btn.textContent;
+                btn.textContent = '\u2705 \u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e41\u0e25\u0e49\u0e27!';
+                btn.style.background = '#4CAF50';
+                btn.style.color = '#fff';
+                btn.style.borderColor = '#388E3C';
+                setTimeout(function() {
+                    btn.textContent = orig;
+                    btn.style.background = '';
+                    btn.style.color = '';
+                    btn.style.borderColor = '';
+                }, 2000);
+            }
+        }
+
         function getRandomColor() {
-            // Generate a random dark color (HSL with limits)
-            // Hue: 0-360, Saturation: 70-100%, Lightness: 20-40% (Dark enough for white bg)
             const h = Math.floor(Math.random() * 360);
-            const s = Math.floor(Math.random() * 30) + 70; // 70-100%
-            const l = Math.floor(Math.random() * 25) + 20; // 20-45%
+            const s = Math.floor(Math.random() * 30) + 70;
+            const l = Math.floor(Math.random() * 25) + 20;
             return `hsl(${h}, ${s}%, ${l}%)`;
         }
 
@@ -687,43 +1055,274 @@
             if (sketchup) {
                 sketchup.requestData();
             } else {
-                // Sample data matching the reference image
+                // Sample data with 3-phase example (slots 2,4,6)
                 populateTable([
-                    { circuit_no: 1, name: 'LIGHTNING+SIGNAGE', wire_size: 'L+N : 2-1/Cx2.5', wire_type: 'THW', conduit: '1/2" PVC', breaker_pole: 1, breaker_at: 15, va_a: 1355, va_b: '', va_c: '' },
-                    { circuit_no: 3, name: 'RECEPTACLE', wire_size: 'L+N : 2-1/Cx2.5\nG : 1-1/Cx2.5', wire_type: 'THW', conduit: '1/2" PVC', breaker_pole: 1, breaker_at: 15, va_a: '', va_b: 1360, va_c: '' },
-                    { circuit_no: 5, name: 'RECEPTACLE', wire_size: 'L+N : 2-1/Cx2.5\nG : 1-1/Cx2.5', wire_type: 'THW', conduit: '1/2" PVC', breaker_pole: 1, breaker_at: 15, va_a: '', va_b: '', va_c: 1530 },
-                    { circuit_no: 2, name: 'POWER PLUG', wire_size: 'L+N : 2-1/Cx2.5\nG : 1-1/Cx2.5', wire_type: 'THW', conduit: '3/4" PVC', breaker_pole: 3, breaker_at: 20, va_a: 2600, va_b: '', va_c: '' },
-                    { circuit_no: 4, name: 'CDU1 (24,000 BTU)', wire_size: 'L+N : 2-1/Cx6\nG : 1-1/Cx4', wire_type: 'THW', conduit: '3/4" PVC', breaker_pole: 1, breaker_at: 30, va_a: 3000, va_b: '', va_c: '' },
-                    { circuit_no: 6, name: 'CDU2 (24,000 BTU)', wire_size: 'L+N : 2-1/Cx6\nG : 1-1/Cx4', wire_type: 'THW', conduit: '3/4" PVC', breaker_pole: 1, breaker_at: 30, va_a: '', va_b: 3000, va_c: '' },
-                    { circuit_no: 8, name: 'CDU3 (24,000 BTU)', wire_size: 'L+N : 2-1/Cx6\nG : 1-1/Cx4', wire_type: 'THW', conduit: '3/4" PVC', breaker_pole: 1, breaker_at: 30, va_a: '', va_b: '', va_c: 3000 },
+                    { circuit_no: 1, name: 'LIGHTNING+SIGNAGE', wire_size: 'L+N : 2-1/Cx2.5', wire_type: 'THW', conduit: '1/2" PVC', breaker_pole: 1, breaker_at: 15, va_a: 1355, va_b: '', va_c: '', span_size: 1 },
+                    { circuit_no: 3, name: 'RECEPTACLE', wire_size: 'L+N : 2-1/Cx2.5\nG : 1-1/Cx2.5', wire_type: 'THW', conduit: '1/2" PVC', breaker_pole: 1, breaker_at: 15, va_a: '', va_b: 1360, va_c: '', span_size: 1 },
+                    { circuit_no: 5, name: 'RECEPTACLE', wire_size: 'L+N : 2-1/Cx2.5\nG : 1-1/Cx2.5', wire_type: 'THW', conduit: '1/2" PVC', breaker_pole: 1, breaker_at: 15, va_a: '', va_b: '', va_c: 1530, span_size: 1 },
+                    // 3-phase circuit spanning slots 2,4,6 on right side
+                    { circuit_no: 2, name: 'ELEVATOR MOTOR', wire_size: '3-1/Cx10\nG : 1-1/Cx6', wire_type: 'THW', conduit: '1" PVC', breaker_pole: 3, breaker_at: 30, va_a: 2500, va_b: '', va_c: '', span_group: '3p_elev', span_position: 0, span_size: 3 },
+                    { circuit_no: 4, name: 'ELEVATOR MOTOR', wire_size: '3-1/Cx10\nG : 1-1/Cx6', wire_type: 'THW', conduit: '1" PVC', breaker_pole: 3, breaker_at: 30, va_a: '', va_b: 2500, va_c: '', span_group: '3p_elev', span_position: 1, span_size: 3 },
+                    { circuit_no: 6, name: 'ELEVATOR MOTOR', wire_size: '3-1/Cx10\nG : 1-1/Cx6', wire_type: 'THW', conduit: '1" PVC', breaker_pole: 3, breaker_at: 30, va_a: '', va_b: '', va_c: 2500, span_group: '3p_elev', span_position: 2, span_size: 3 },
+                    { circuit_no: 8, name: 'CDU1 (24,000 BTU)', wire_size: 'L+N : 2-1/Cx6\nG : 1-1/Cx4', wire_type: 'THW', conduit: '3/4" PVC', breaker_pole: 1, breaker_at: 30, va_a: 3000, va_b: '', va_c: '', span_size: 1 },
                 ]);
             }
         }
 
         function exportToCSV() {
             if (sketchup) sketchup.exportCSV();
-            else alert('Export CSV (ทดสอบ - ไม่ได้เชื่อมต่อ SketchUp)');
+            else alert('Export CSV (\u0e17\u0e14\u0e2a\u0e2d\u0e1a - \u0e44\u0e21\u0e48\u0e44\u0e14\u0e49\u0e40\u0e0a\u0e37\u0e48\u0e2d\u0e21\u0e15\u0e48\u0e2d SketchUp)');
+        }
+
+        const COL_COUNT = 21;
+        // Resizable columns: 1=SIZE L, 18=SIZE R
+        const RESIZABLE_COLS = new Set([1, 18]);
+
+        function autoFitColumns() {
+            const table = document.getElementById('circuitTable');
+            if (!table) return;
+            const colgroup = table.querySelector('colgroup');
+            if (!colgroup || colgroup.children.length < COL_COUNT) return;
+
+            // Only clear widths for resizable columns
+            const savedWidths = [];
+            for (let c = 0; c < COL_COUNT; c++) {
+                savedWidths[c] = colgroup.children[c].style.width;
+                if (RESIZABLE_COLS.has(c)) {
+                    colgroup.children[c].style.width = '';
+                }
+            }
+            table.style.tableLayout = 'auto';
+            table.style.width = 'auto';
+
+            // Measure widths only for resizable columns
+            const colWidths = new Array(COL_COUNT).fill(0);
+            const allRows = table.querySelectorAll('thead tr, tbody tr, tfoot tr');
+            allRows.forEach(tr => {
+                let colIdx = 0;
+                for (let ci = 0; ci < tr.cells.length; ci++) {
+                    const td = tr.cells[ci];
+                    const span = td.colSpan || 1;
+                    if (span === 1 && RESIZABLE_COLS.has(colIdx) && !td.classList.contains('sld-cell')) {
+                        const w = td.scrollWidth + 6;
+                        if (w > colWidths[colIdx]) colWidths[colIdx] = w;
+                    }
+                    colIdx += span;
+                }
+            });
+
+            // Apply measured widths only to resizable columns
+            for (let c = 0; c < COL_COUNT; c++) {
+                if (RESIZABLE_COLS.has(c)) {
+                    const w = colWidths[c] > 0 ? colWidths[c] : 80;
+                    colgroup.children[c].style.width = w + 'px';
+                }
+            }
+
+            table.style.tableLayout = 'fixed';
+            table.style.width = '100%';
         }
 
         function autoFit() {
             setTimeout(function () {
-                const table = document.getElementById('mainTable');
-                // Calculate height based on table and toolbar, plus a small buffer
-                const h = table.offsetHeight + 40 + 50; // 40 for toolbar + 20 buffer
-
-                if (window.sketchup) {
-                    sketchup.resizeDialog(window.innerWidth, h);
-                }
+                autoFitColumns();
+                initColumnResizers();
+                initRowResizers();
             }, 300);
+        }
+
+        // ===== Column Resize (only on resizable columns) =====
+        function initColumnResizers() {
+            const table = document.getElementById('circuitTable');
+            if (!table) return;
+            const colgroup = table.querySelector('colgroup');
+            if (!colgroup) return;
+
+            // Remove old resizers
+            table.querySelectorAll('.col-resizer').forEach(r => r.remove());
+
+            // Add resizers only to header cells that cover a resizable column
+            const headerRows = table.querySelectorAll('thead tr');
+            headerRows.forEach(tr => {
+                let colIdx = 0;
+                Array.from(tr.cells).forEach(th => {
+                    const myColIdx = colIdx;
+                    const span = th.colSpan || 1;
+                    const targetColIdx = myColIdx + span - 1;
+                    colIdx += span;
+
+                    // Only add resizer if this cell's right-edge column is resizable
+                    if (!RESIZABLE_COLS.has(targetColIdx)) return;
+
+                    const resizer = document.createElement('div');
+                    resizer.className = 'col-resizer';
+                    th.appendChild(resizer);
+
+                    let startX, startW;
+
+                    resizer.addEventListener('mousedown', function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const col = colgroup.children[targetColIdx];
+                        if (!col) return;
+                        startX = e.pageX;
+                        startW = parseInt(col.style.width) || th.offsetWidth;
+                        resizer.classList.add('active');
+
+                        function onMouseMove(ev) {
+                            const diff = ev.pageX - startX;
+                            const newW = Math.max(30, startW + diff);
+                            col.style.width = newW + 'px';
+                        }
+                        function onMouseUp() {
+                            resizer.classList.remove('active');
+                            document.removeEventListener('mousemove', onMouseMove);
+                            document.removeEventListener('mouseup', onMouseUp);
+                        }
+                        document.addEventListener('mousemove', onMouseMove);
+                        document.addEventListener('mouseup', onMouseUp);
+                    });
+
+                    // Double-click to auto-fit single column
+                    resizer.addEventListener('dblclick', function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        autoFitSingleColumn(targetColIdx);
+                    });
+                });
+            });
+        }
+
+        function autoFitSingleColumn(colIdx) {
+            const table = document.getElementById('circuitTable');
+            if (!table) return;
+            const colgroup = table.querySelector('colgroup');
+            if (!colgroup || !colgroup.children[colIdx]) return;
+            if (!RESIZABLE_COLS.has(colIdx)) return;
+
+            const col = colgroup.children[colIdx];
+            col.style.width = '';
+            table.style.tableLayout = 'auto';
+            table.style.width = 'auto';
+
+            let maxW = 0;
+            const allRows = table.querySelectorAll('tr');
+            allRows.forEach(tr => {
+                let ci = 0;
+                for (let j = 0; j < tr.cells.length; j++) {
+                    const td = tr.cells[j];
+                    const span = td.colSpan || 1;
+                    if (ci === colIdx && span === 1) {
+                        const w = td.scrollWidth + 6;
+                        if (w > maxW) maxW = w;
+                    }
+                    ci += span;
+                }
+            });
+
+            if (maxW < 30) maxW = 30;
+            col.style.width = maxW + 'px';
+            table.style.tableLayout = 'fixed';
+            table.style.width = '100%';
+        }
+
+        // ===== Excel-like Row Height Resize =====
+        function initRowResizers() {
+            const table = document.getElementById('circuitTable');
+            if (!table) return;
+            const tbody = table.querySelector('tbody');
+            if (!tbody) return;
+
+            // Remove old row resizers
+            tbody.querySelectorAll('.row-resizer').forEach(r => r.remove());
+
+            const rows = tbody.querySelectorAll('tr');
+            rows.forEach((tr, rowIdx) => {
+                // Add resizer to the first non-rowspan cell in the row
+                const firstTd = tr.cells[0];
+                if (!firstTd) return;
+
+                const resizer = document.createElement('div');
+                resizer.className = 'row-resizer';
+                firstTd.appendChild(resizer);
+
+                let startY, startH;
+
+                resizer.addEventListener('mousedown', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    startY = e.pageY;
+                    startH = tr.offsetHeight;
+                    resizer.classList.add('active');
+
+                    function onMouseMove(ev) {
+                        const diff = ev.pageY - startY;
+                        const newH = Math.max(16, startH + diff);
+                        tr.style.height = newH + 'px';
+                        // Also set all cells in this row
+                        Array.from(tr.cells).forEach(td => {
+                            td.style.height = newH + 'px';
+                        });
+                    }
+                    function onMouseUp() {
+                        resizer.classList.remove('active');
+                        document.removeEventListener('mousemove', onMouseMove);
+                        document.removeEventListener('mouseup', onMouseUp);
+                    }
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
+                });
+
+                // Double-click to auto-fit row height
+                resizer.addEventListener('dblclick', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    tr.style.height = '';
+                    Array.from(tr.cells).forEach(td => {
+                        td.style.height = '';
+                    });
+                });
+            });
+        }
+
+        function initHeaderResizers() {
+            document.querySelectorAll('.header-info td').forEach(function(td) {
+                var input = td.querySelector('input[type="text"]');
+                if (!input) return;
+                td.querySelectorAll('.header-resizer').forEach(function(r) { r.remove(); });
+                var resizer = document.createElement('div');
+                resizer.className = 'header-resizer';
+                td.appendChild(resizer);
+                var startX, startW;
+                resizer.addEventListener('mousedown', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    startX = e.pageX;
+                    startW = td.offsetWidth;
+                    resizer.classList.add('active');
+                    function onMove(ev) {
+                        var diff = ev.pageX - startX;
+                        var newW = Math.max(40, startW + diff);
+                        td.style.width = newW + 'px';
+                    }
+                    function onUp() {
+                        resizer.classList.remove('active');
+                        document.removeEventListener('mousemove', onMove);
+                        document.removeEventListener('mouseup', onUp);
+                    }
+                    document.addEventListener('mousemove', onMove);
+                    document.addEventListener('mouseup', onUp);
+                });
+            });
         }
 
         document.addEventListener('DOMContentLoaded', function () {
             requestData();
             autoFit();
+            initHeaderResizers();
         });
 
         // Periodically save dialog position so Ruby always has the latest
-        // Compute chromeHeight once to avoid fluctuation-induced Y drift
         var _chromeHeight = 0;
         setTimeout(function() {
             _chromeHeight = window.outerHeight - window.innerHeight;

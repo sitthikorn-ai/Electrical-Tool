@@ -34,6 +34,7 @@ module MyExtensions
         @offset_y = Sketchup.read_default('SKH_PlaceDevice', 'OffsetY', 0.0).to_f
         @offset_z = Sketchup.read_default('SKH_PlaceDevice', 'OffsetZ', 0.0).to_f
         @offset_mode = false  # true when waiting for VCB offset input
+        @last_ctrl_time = 0.0  # debounce for Ctrl toggle
         # Z-Plane: load last used value from preferences.
         # Always store/read as String to avoid SketchUp read_default type mismatch.
         saved_z = Sketchup.read_default('SKH_PlaceDevice', 'ZPlaneHeight', '')
@@ -133,6 +134,13 @@ module MyExtensions
           @position = base_pos
         end
 
+        # Update VCB with distance when axis is locked (like native Move tool)
+        if @lock_axis != :none && @lock_origin && !@offset_mode
+          dist = @lock_origin.distance(@position)
+          Sketchup.vcb_label = "Distance:"
+          Sketchup.vcb_value = dist.to_l.to_s
+        end
+
         view.tooltip = @input_point.tooltip if @input_point.valid?
         view.invalidate
       end
@@ -189,36 +197,8 @@ module MyExtensions
 
       def onUserText(text, view)
         if @offset_mode
-          # Parse offset X,Y,Z from VCB (formats: "X,Y,Z" or "X,Y" or "X;Y;Z" or single value)
-          begin
-            parts = text.strip.split(/[,;\s]+/)
-            if parts.length >= 3
-              @offset_x = parts[0].to_l.to_f
-              @offset_y = parts[1].to_l.to_f
-              @offset_z = parts[2].to_l.to_f
-            elsif parts.length == 2
-              @offset_x = parts[0].to_l.to_f
-              @offset_y = parts[1].to_l.to_f
-            elsif parts.length == 1
-              val = parts[0].to_l.to_f
-              @offset_x = val
-              @offset_y = val
-              @offset_z = 0.0
-            else
-              UI.beep
-              Sketchup.status_text = "Invalid offset. Use: X,Y,Z (e.g. 100mm,50mm,0)"
-              return
-            end
-            save_offsets
-            @offset_mode = false
-            update_status_text
-            update_vcb_label
-            notify_dialog_offset
-            view.invalidate
-          rescue ArgumentError
-            UI.beep
-            Sketchup.status_text = "Invalid offset value. Use: X,Y,Z (e.g. 100mm,50mm,0)"
-          end
+          # Offset mode: parse VCB input (X=val, Y=val, number=Z, or X,Y,Z)
+          process_offset_input(text.strip, view)
         elsif @array_ready && text.strip =~ /\A[*xX]\s*(\d+)\z/
           n = $1.to_i
           if n >= 2
@@ -234,6 +214,36 @@ module MyExtensions
           else
             UI.beep
             Sketchup.status_text = "Divide: ต้องระบุจำนวน >= 2"
+          end
+        elsif @lock_axis != :none && @lock_origin
+          # Parse distance for axis-locked placement (like native Move)
+          begin
+            typed_dist = text.to_l
+            dir = case @lock_axis
+              when :x then X_AXIS
+              when :y then Y_AXIS
+              when :z then Z_AXIS
+            end
+            # Determine direction sign from current mouse position
+            current_offset = case @lock_axis
+              when :x then @position.x - @lock_origin.x
+              when :y then @position.y - @lock_origin.y
+              when :z then @position.z - @lock_origin.z
+            end
+            sign = current_offset >= 0 ? 1.0 : -1.0
+            @position = @lock_origin.offset(dir, typed_dist.to_f * sign)
+            place_component(view)
+            @placed_count += 1
+            if @dialog
+              escaped = @label.gsub("'", "\\\\'")
+              @dialog.execute_script("onDevicePlaced('#{escaped}')")
+            end
+            update_status_text
+            update_vcb_label
+            view.invalidate
+          rescue ArgumentError
+            UI.beep
+            Sketchup.status_text = "Invalid distance value"
           end
         else
           # Parse length for Z-Plane
@@ -279,17 +289,21 @@ module MyExtensions
             update_vcb_label
             view.invalidate
             return true
-          when 17 # Ctrl (VK_CONTROL)
-            @offset_mode = !@offset_mode
-            if @offset_mode
-              Sketchup.status_text = "Offset Mode: พิมพ์ค่า X,Y,Z ใน VCB (เช่น 100mm,50mm,0) แล้วกด Enter | Esc=ยกเลิก"
-              Sketchup.vcb_label = "Offset X,Y,Z:"
-              Sketchup.vcb_value = "#{@offset_x.to_l},#{@offset_y.to_l},#{@offset_z.to_l}"
-            else
-              update_status_text
-              update_vcb_label
+          when 17 # Ctrl (VK_CONTROL) — debounce to prevent rapid toggle
+            now = Time.now.to_f
+            if (now - @last_ctrl_time) > 0.3
+              @offset_mode = !@offset_mode
+              if @offset_mode
+                Sketchup.status_text = "Offset Mode: พิมพ์ X,Y,Z (เช่น 100mm,50mm,0) หรือ X=val / Y=val / ตัวเลข=Z แล้วกด Enter | Esc=ยกเลิก"
+                Sketchup.vcb_label = "Offset X,Y,Z:"
+                Sketchup.vcb_value = "#{@offset_x.to_l},#{@offset_y.to_l},#{@offset_z.to_l}"
+              else
+                update_status_text
+                update_vcb_label
+              end
+              view.invalidate
             end
-            view.invalidate
+            @last_ctrl_time = now
             return true
           when 18 # Alt (VK_MENU)
             @z_plane_mode = !@z_plane_mode
@@ -492,6 +506,43 @@ module MyExtensions
         view.line_width = 2
         view.drawing_color = color
         view.draw(GL_LINES, [pt1, pt2])
+
+        # Draw solid distance line from lock_origin to current position
+        if @position
+          view.line_stipple = ''
+          view.line_width = 3
+          view.drawing_color = color
+          view.draw(GL_LINES, [@lock_origin, @position])
+
+          # Distance text at midpoint (like native Move tool)
+          dist = @lock_origin.distance(@position)
+          if dist > 0.001
+            mid = Geom::Point3d.linear_combination(0.5, @lock_origin, 0.5, @position)
+            sp_mid = view.screen_coords(mid)
+            axis_name = case @lock_axis
+              when :x then "Red (X)"
+              when :y then "Green (Y)"
+              when :z then "Blue (Z)"
+            end
+            view.draw_text([sp_mid.x + 12, sp_mid.y - 14, 0],
+              dist.to_l.to_s,
+              size: 12, bold: true, color: color)
+            view.draw_text([sp_mid.x + 12, sp_mid.y + 2, 0],
+              "Lock: #{axis_name}",
+              size: 9, color: color)
+          end
+
+          # Draw small square marker at lock_origin
+          sp_origin = view.screen_coords(@lock_origin)
+          d = 5
+          view.line_stipple = ''
+          view.line_width = 2
+          view.drawing_color = color
+          view.draw2d(GL_LINE_LOOP, [
+            [sp_origin.x - d, sp_origin.y - d, 0], [sp_origin.x + d, sp_origin.y - d, 0],
+            [sp_origin.x + d, sp_origin.y + d, 0], [sp_origin.x - d, sp_origin.y + d, 0]
+          ])
+        end
         view.line_stipple = ''
       end
 
@@ -561,8 +612,9 @@ module MyExtensions
 
       def update_status_text
         lock_info = case @lock_axis
-          when :x then " | 🔒 Lock X (Red)"
-          when :z then " | 🔒 Lock Z (Blue)"
+          when :x then " | \u{1F512} Lock X (Red)"
+          when :y then " | \u{1F512} Lock Y (Green)"
+          when :z then " | \u{1F512} Lock Z (Blue)"
           else ''
         end
         z_info = @z_plane_height ? " | Z-Plane: #{@z_plane_height.to_l}" : ""
@@ -578,6 +630,10 @@ module MyExtensions
         if @offset_mode
           Sketchup.vcb_label = "Offset X,Y,Z:"
           Sketchup.vcb_value = "#{@offset_x.to_l},#{@offset_y.to_l},#{@offset_z.to_l}"
+        elsif @lock_axis != :none && @lock_origin && @position
+          dist = @lock_origin.distance(@position)
+          Sketchup.vcb_label = "Distance:"
+          Sketchup.vcb_value = dist.to_l.to_s
         elsif @array_ready && @array_start_pos && @array_end_pos
           dist = @array_start_pos.distance(@array_end_pos)
           Sketchup.vcb_label = "Array (*n /n):"
@@ -606,6 +662,59 @@ module MyExtensions
         Sketchup.write_default('SKH_PlaceDevice', 'OffsetX', @offset_x)
         Sketchup.write_default('SKH_PlaceDevice', 'OffsetY', @offset_y)
         Sketchup.write_default('SKH_PlaceDevice', 'OffsetZ', @offset_z)
+      end
+
+      # Offset parsing logic: X=val, Y=val, single number=Z, or X,Y,Z
+      def process_offset_input(text, view)
+        # Single-axis format: X=val, Y=val, Z=val (case-insensitive)
+        if text =~ /\A([xyzXYZ])\s*=\s*(.+)\z/
+          begin
+            axis = $1.downcase
+            val = $2.to_l.to_f
+            case axis
+            when 'x' then @offset_x = val
+            when 'y' then @offset_y = val
+            when 'z' then @offset_z = val
+            end
+            save_offsets
+            @offset_mode = false
+            update_status_text
+            update_vcb_label
+            notify_dialog_offset
+            view.invalidate
+          rescue ArgumentError
+            UI.beep
+            Sketchup.status_text = "Invalid value. Use: X=100mm or Y=0.5m or 0=Z"
+          end
+          return
+        end
+        # Multi-axis format: "X,Y,Z" or "X,Y" or "X;Y;Z" or single value
+        begin
+          parts = text.split(/[,;\s]+/)
+          if parts.length >= 3
+            @offset_x = parts[0].to_l.to_f
+            @offset_y = parts[1].to_l.to_f
+            @offset_z = parts[2].to_l.to_f
+          elsif parts.length == 2
+            @offset_x = parts[0].to_l.to_f
+            @offset_y = parts[1].to_l.to_f
+          elsif parts.length == 1
+            @offset_z = parts[0].to_l.to_f
+          else
+            UI.beep
+            Sketchup.status_text = "Invalid offset. Use: X,Y,Z (e.g. 100mm,50mm,0)"
+            return
+          end
+          save_offsets
+          @offset_mode = false
+          update_status_text
+          update_vcb_label
+          notify_dialog_offset
+          view.invalidate
+        rescue ArgumentError
+          UI.beep
+          Sketchup.status_text = "Invalid offset value. Use: X,Y,Z (e.g. 100mm,50mm,0)"
+        end
       end
 
       def notify_dialog_offset
@@ -2803,6 +2912,54 @@ module MyExtensions
           end
         end
 
+        # --- Callback: Update component — save selected component back to components folder ---
+        dialog.add_action_callback("updateComponent") do |_ctx, device_index|
+          begin
+            idx = device_index.to_i
+            static_count = InputDevicesData::DEVICES_TAB.length
+            device = if idx < static_count
+                       InputDevicesData::DEVICES_TAB[idx]
+                     else
+                       custom_devices[idx - static_count]
+                     end
+            unless device
+              dialog.execute_script("onComponentUpdateError('Device not found')")
+              next
+            end
+
+            skp_file = device[1]
+            comp_path = File.join(InputDevicesData::COMPONENTS_DIR, skp_file)
+
+            # Find the component definition in the model by matching the loaded file name
+            model = Sketchup.active_model
+            comp_def = model.definitions.find { |d| d.path == comp_path || d.name == File.basename(skp_file, '.skp') }
+
+            unless comp_def
+              # Try loading it first
+              if File.exist?(comp_path)
+                comp_def = model.definitions.load(comp_path)
+              end
+            end
+
+            unless comp_def
+              dialog.execute_script("onComponentUpdateError('Component definition not found in model')")
+              next
+            end
+
+            # Save the component definition back to the components folder
+            success = comp_def.save_as(comp_path)
+
+            if success
+              dialog.execute_script("onComponentUpdated('#{skp_file.gsub("'", "\\\\'")}')")
+            else
+              dialog.execute_script("onComponentUpdateError('Failed to save file')")
+            end
+
+          rescue => e
+            dialog.execute_script("onComponentUpdateError('#{e.message.gsub("'", "\\\\'")}')")
+          end
+        end
+
         # --- Callback: Save last selected device/wire index ---
         dialog.add_action_callback("saveLastSelection") do |_ctx, device_idx, wire_idx|
           Sketchup.write_default('SKH_PlaceDevice', 'LastDeviceIndex', device_idx.to_i)
@@ -2958,6 +3115,9 @@ module MyExtensions
               dialog.execute_script("onDevicePlaceError('Failed to load component: #{skp_file}')")
               next
             end
+
+            # Clear Z-Plane so each new placement starts without Alt z-plane lock
+            Sketchup.write_default('SKH_PlaceDevice', 'ZPlaneHeight', '')
 
             tool = PlaceDeviceTool.new(comp_def, label, conn_type, skp_file, dialog)
             active_place_tool = tool

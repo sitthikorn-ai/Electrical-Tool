@@ -479,6 +479,18 @@
             border-color: var(--primary);
         }
 
+        .view-btn.update-btn {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+
+        .view-btn.update-btn:hover {
+            background: var(--accent-hover);
+            border-color: var(--accent-hover);
+            color: #fff;
+        }
+
         /* ===== Offset Row ===== */
         .offset-row {
             display: flex;
@@ -785,6 +797,7 @@
                     <div class="preview-view-btns">
                         <button class="view-btn active" id="btn-view-iso" onclick="event.stopPropagation();setPreviewView('iso')">ISO</button>
                         <button class="view-btn" id="btn-view-top" onclick="event.stopPropagation();setPreviewView('top')">TOP</button>
+                        <button class="view-btn update-btn" id="btn-update-comp" onclick="event.stopPropagation();updateSelectedComponent()" title="Save selected component back to components folder">UPDATE</button>
                     </div>
                 </div>
                 <div class="preview-body" id="preview-body">
@@ -1347,6 +1360,26 @@
         // =============================================
         // ACTIONS
         // =============================================
+        function updateSelectedComponent() {
+            if (selectedDeviceIndex < 0) {
+                setStatus('error', 'Please select a device first');
+                return;
+            }
+            setStatus('', 'Updating component file...');
+            sketchup.updateComponent(selectedDeviceIndex);
+        }
+
+        function onComponentUpdated(filename) {
+            setStatus('success', 'Component updated: ' + filename);
+            if (selectedDeviceIndex >= 0) {
+                sketchup.getDevicePreview(selectedDeviceIndex, currentPreviewView);
+            }
+        }
+
+        function onComponentUpdateError(msg) {
+            setStatus('error', 'Update failed: ' + msg);
+        }
+
         function placeDevice() {
             if (selectedDeviceIndex < 0) return;
             // Save offset values from HTML inputs to Ruby before placing

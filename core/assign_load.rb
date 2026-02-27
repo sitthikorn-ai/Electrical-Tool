@@ -163,7 +163,7 @@ module MyExtensions
           selection.clear
 
           UI.start_timer(0, false) do
-            tool = HighlightTool.new(applied_entities, 2.0)
+            tool = HighlightTool.new(applied_entities, 1.5)
             Sketchup.active_model.select_tool(tool)
           end
         end
@@ -177,7 +177,7 @@ module MyExtensions
           selection.clear
 
           UI.start_timer(0, false) do
-            tool = HighlightTool.new(applied_entities, 2.0)
+            tool = HighlightTool.new(applied_entities, 1.5)
             Sketchup.active_model.select_tool(tool)
           end
         end
