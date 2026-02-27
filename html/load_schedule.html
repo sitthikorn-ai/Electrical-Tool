@@ -145,15 +145,55 @@
         .clickable:hover {
             color: #0066d6 !important;
         }
+
+        .clickable.selected {
+            background: #d0e8ff;
+            outline: 2px solid #0066d6;
+            outline-offset: -2px;
+            border-radius: 2px;
+        }
+
+        .calc-row td {
+            background: #f0f4ff;
+            padding: 3px 6px;
+            font-size: 10px;
+        }
+
+        .calc-row select {
+            border: 1px solid #888;
+            background: #fff;
+            font-family: inherit;
+            font-size: 10px;
+            padding: 2px 4px;
+            width: 100%;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        .calc-row select:focus {
+            border-color: #0066d6;
+            outline: none;
+        }
+
+        .calc-row .calc-result {
+            font-weight: bold;
+            color: #c00;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: 10px;
+            width: 100%;
+            padding: 1px 2px;
+        }
     </style>
 </head>
 
 <body>
 
     <div class="toolbar">
-        <button onclick="requestData()">🔄 โหลดข้อมูลใหม่</button>
-        <button onclick="exportToCSV()">📄 ส่งออก CSV</button>
-        <button onclick="window.print()">🖨️ พิมพ์</button>
+        <button onclick="requestData()">โหลดข้อมูลใหม่</button>
+        <button onclick="exportToCSV()">ส่งออก CSV</button>
+        <button onclick="window.print()">พิมพ์</button>
     </div>
 
     <table class="main-table" id="mainTable">
@@ -258,6 +298,21 @@
             </td>
         </tr>
 
+        <!-- ===== Main Breaker Calculation (มาตรฐาน วสท.) ===== -->
+        <tr class="calc-row">
+            <td colspan="4"><span class="label" style="font-weight:bold;">ระบบจ่ายไฟหลัก</span></td>
+            <td colspan="3">
+                <select id="mainPhaseSelect" onchange="recalcMainBreaker()">
+                    <option value="3">3 Phase (3Ø 4W)</option>
+                    <option value="1">1 Phase (1Ø 2W)</option>
+                </select>
+            </td>
+            <td colspan="6"><span class="label" style="font-weight:bold;">กระแสออกแบบ (I<sub>d</sub>) × 1.25</span></td>
+            <td colspan="7"><input type="text" id="designCurrent" class="calc-result" value="-" readonly></td>
+            <td colspan="4"><span class="label" style="font-weight:bold;">ขนาด Main Breaker (วสท.)</span></td>
+            <td colspan="6"><input type="text" id="mainBreakerCalc" class="calc-result" value="-" readonly style="font-size:11px;"></td>
+        </tr>
+
         <!-- ===== Footer Summary ===== -->
         <tr class="header-info">
             <td colspan="4"><span class="label">กระแสเฟส A</span></td>
@@ -265,7 +320,7 @@
             <td colspan="6"><span class="label">เมนเบรกเกอร์ (TYPE)</span></td>
             <td colspan="7"><input type="text" id="mainBreakerType" value="MOLDED CASE-THERMAL MAGNETIC TYPE"></td>
             <td colspan="4"><span class="label">ขนาดสายป้อน</span></td>
-            <td colspan="6"><input type="text" id="feederWire" value="-"></td>
+            <td colspan="6"><input type="text" id="feederWire" value="-" readonly></td>
         </tr>
         <tr class="header-info">
             <td colspan="4"><span class="label">กระแสเฟส B</span></td>
@@ -273,13 +328,13 @@
             <td colspan="6"><span class="label">ตำแหน่งติดตั้ง (ตอนบน,ตอนล่าง)</span></td>
             <td colspan="7"><input type="text" id="mountPosition" value="ตอนบน"></td>
             <td colspan="4"><span class="label">ขนาดท่อร้อยสายป้อน</span></td>
-            <td colspan="6"><input type="text" id="feederConduit" value="-"></td>
+            <td colspan="6"><input type="text" id="feederConduit" value="-" readonly></td>
         </tr>
         <tr class="header-info">
             <td colspan="4"><span class="label">กระแสเฟส C</span></td>
             <td colspan="3"><input type="text" id="currentC" value="-" readonly></td>
             <td colspan="6"><span class="label">Main Breaker</span></td>
-            <td colspan="7"><input type="text" id="mainBreakerSpec" value="3P 50 AT. 100 AF.IC > 25 KA 415 V.ac"></td>
+            <td colspan="7"><input type="text" id="mainBreakerSpec" value="-" readonly></td>
             <td colspan="4"><span class="label">ลงวันที่</span></td>
             <td colspan="6"><input type="text" id="dateField" value="-"></td>
         </tr>
@@ -288,6 +343,7 @@
     <script>
         const sketchup = window.sketchup;
         const MAX_ROWS = 9; // 18 circuits => 9 rows
+        let currentSelectedId = null; // Track single selected entity ID
 
         // Generate SVG single-line diagram
         function generateSLD(numRows) {
@@ -441,18 +497,48 @@
 
             if (id) {
                 td.classList.add('clickable');
-                td.title = "Click to Select in Model";
-                td.onclick = function () { selectCircuit(id); };
+                td.setAttribute('data-entity-id', id);
+                // Restore selected state if previously selected
+                if (currentSelectedId === String(id)) {
+                    td.classList.add('selected');
+                }
+                td.title = "Click to Select/Unselect in Model";
+                td.onclick = function () { toggleCircuit(id, td); };
             }
 
             tr.appendChild(td);
         }
 
-        function selectCircuit(id) {
-            if (window.sketchup) {
-                window.location.href = 'skp:selectCircuit@' + id;
+        function toggleCircuit(id, tdElement) {
+            const idStr = String(id);
+            const wasSame = (currentSelectedId === idStr);
+
+            // Clear previous selection highlight
+            if (currentSelectedId) {
+                document.querySelectorAll('[data-entity-id="' + currentSelectedId + '"]').forEach(function(el) {
+                    el.classList.remove('selected');
+                });
+            }
+
+            if (wasSame) {
+                // Click same circuit again => deselect
+                currentSelectedId = null;
+                if (window.sketchup) {
+                    sketchup.toggleCircuit(idStr, false);
+                } else {
+                    console.log("Deselect circuit: " + id);
+                }
             } else {
-                console.log("Select circuit: " + id);
+                // Select new circuit (deselect previous first)
+                currentSelectedId = idStr;
+                document.querySelectorAll('[data-entity-id="' + id + '"]').forEach(function(el) {
+                    el.classList.add('selected');
+                });
+                if (window.sketchup) {
+                    sketchup.toggleCircuit(idStr, true);
+                } else {
+                    console.log("Select circuit: " + id);
+                }
             }
         }
 
@@ -488,6 +574,113 @@
             document.getElementById('currentA').value = tA > 0 ? (tA / v1p).toFixed(2) + ' A.' : '-';
             document.getElementById('currentB').value = tB > 0 ? (tB / v1p).toFixed(2) + ' A.' : '-';
             document.getElementById('currentC').value = tC > 0 ? (tC / v1p).toFixed(2) + ' A.' : '-';
+
+            recalcMainBreaker();
+        }
+
+        // ===== มาตรฐาน วสท. (EIT) - Main Breaker Calculation =====
+        const EIT_BREAKER_AT = [10, 15, 16, 20, 25, 30, 32, 40, 50, 63, 75, 80, 100, 125, 150, 175, 200, 225, 250, 300, 350, 400, 500, 630, 800, 1000, 1250, 1600];
+        const EIT_BREAKER_AF = [50, 100, 160, 225, 250, 400, 630, 800, 1000, 1250, 1600];
+        const EIT_FEEDER_WIRE = [
+            { size: 2.5, amp: 25 }, { size: 4, amp: 33 }, { size: 6, amp: 44 },
+            { size: 10, amp: 61 }, { size: 16, amp: 82 }, { size: 25, amp: 108 },
+            { size: 35, amp: 134 }, { size: 50, amp: 167 }, { size: 70, amp: 207 },
+            { size: 95, amp: 252 }, { size: 120, amp: 290 }, { size: 150, amp: 334 },
+            { size: 185, amp: 380 }, { size: 240, amp: 442 }, { size: 300, amp: 510 },
+            { size: 400, amp: 607 }, { size: 500, amp: 703 }
+        ];
+        const EIT_CONDUIT = [
+            { maxSize: 4, conduit: '1/2"' }, { maxSize: 10, conduit: '3/4"' },
+            { maxSize: 16, conduit: '1"' }, { maxSize: 25, conduit: '1-1/4"' },
+            { maxSize: 35, conduit: '1-1/2"' }, { maxSize: 70, conduit: '2"' },
+            { maxSize: 120, conduit: '2-1/2"' }, { maxSize: 185, conduit: '3"' },
+            { maxSize: 300, conduit: '4"' }, { maxSize: 500, conduit: '5"' }
+        ];
+        const EIT_GROUND_WIRE = [
+            { maxAT: 20, size: 2.5 }, { maxAT: 40, size: 4 },
+            { maxAT: 70, size: 6 }, { maxAT: 100, size: 10 },
+            { maxAT: 200, size: 16 }, { maxAT: 400, size: 25 },
+            { maxAT: 600, size: 35 }, { maxAT: 1600, size: 50 }
+        ];
+
+        function selectMainBreakerAT(minAmp) {
+            for (const at of EIT_BREAKER_AT) { if (at >= minAmp) return at; }
+            return EIT_BREAKER_AT[EIT_BREAKER_AT.length - 1];
+        }
+        function selectMainBreakerAF(at) {
+            for (const af of EIT_BREAKER_AF) { if (af >= at) return af; }
+            return EIT_BREAKER_AF[EIT_BREAKER_AF.length - 1];
+        }
+        function selectMainFeederWire(breakerAT) {
+            for (const w of EIT_FEEDER_WIRE) { if (w.amp >= breakerAT) return w; }
+            return EIT_FEEDER_WIRE[EIT_FEEDER_WIRE.length - 1];
+        }
+        function selectMainGroundWire(breakerAT) {
+            for (const g of EIT_GROUND_WIRE) { if (breakerAT <= g.maxAT) return g.size; }
+            return 50;
+        }
+        function selectMainConduit(wireSizeSqmm) {
+            for (const c of EIT_CONDUIT) { if (wireSizeSqmm <= c.maxSize) return c.conduit + ' PVC'; }
+            return '5" PVC';
+        }
+
+        function recalcMainBreaker() {
+            const phase = parseInt(document.getElementById('mainPhaseSelect').value);
+            const tA = numval(document.getElementById('sumA_L').textContent.replace(/,/g, ''));
+            const tB = numval(document.getElementById('sumB_L').textContent.replace(/,/g, ''));
+            const tC = numval(document.getElementById('sumC_L').textContent.replace(/,/g, ''));
+
+            let totalVA, designCurrent, pole, icVoltage;
+
+            if (phase === 1) {
+                totalVA = Math.max(tA, tB, tC);
+                designCurrent = totalVA / 220;
+                pole = 2;
+                icVoltage = '240 V.ac';
+            } else {
+                totalVA = tA + tB + tC;
+                designCurrent = totalVA / (Math.sqrt(3) * 380);
+                pole = 3;
+                icVoltage = '415 V.ac';
+            }
+
+            if (designCurrent <= 0) {
+                document.getElementById('designCurrent').value = '-';
+                document.getElementById('mainBreakerCalc').value = '-';
+                document.getElementById('mainBreakerSpec').value = '-';
+                document.getElementById('feederWire').value = '-';
+                document.getElementById('feederConduit').value = '-';
+                return;
+            }
+
+            const minAT = designCurrent * 1.25;
+            const breakerAT = selectMainBreakerAT(minAT);
+            const breakerAF = selectMainBreakerAF(breakerAT);
+            const feeder = selectMainFeederWire(breakerAT);
+            const groundSize = selectMainGroundWire(breakerAT);
+            const conduit = selectMainConduit(feeder.size);
+
+            document.getElementById('designCurrent').value =
+                designCurrent.toFixed(2) + ' A. (\u00d71.25 = ' + minAT.toFixed(2) + ' A.)';
+            document.getElementById('mainBreakerCalc').value =
+                pole + 'P ' + breakerAT + ' AT. ' + breakerAF + ' AF.';
+            document.getElementById('mainBreakerSpec').value =
+                pole + 'P ' + breakerAT + ' AT. ' + breakerAF + ' AF. IC > 25 KA ' + icVoltage;
+
+            let wireStr;
+            if (phase === 1) {
+                wireStr = 'L+N : 2-1/Cx' + feeder.size + ', G : 1-1/Cx' + groundSize + ' sq.mm. (THW)';
+            } else {
+                wireStr = '3-1/Cx' + feeder.size + ', N : 1-1/Cx' + feeder.size + ', G : 1-1/Cx' + groundSize + ' sq.mm. (THW)';
+            }
+            document.getElementById('feederWire').value = wireStr;
+            document.getElementById('feederConduit').value = conduit;
+
+            if (phase === 1) {
+                document.getElementById('systemType').value = '1 \u00D8 2 WIRE WITH GROUND 220 V.ac. 50 Hz';
+            } else {
+                document.getElementById('systemType').value = '3 \u00D8 4 WIRE WITH GROUND 380/220 V.ac. 50 Hz';
+            }
         }
 
         function requestData() {

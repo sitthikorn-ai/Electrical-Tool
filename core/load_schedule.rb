@@ -202,11 +202,9 @@ module MyExtensions
         rescue => e; UI.messagebox("เกิดข้อผิดพลาดในการส่งออก: #{e.message}"); end
       end
 
-      @last_load_schedule_pos = nil
-
-      def self.show_load_schedule
+      def self.toggle_load_schedule
         if @dialog
-          @dialog.bring_to_front
+          @dialog.close
           return
         end
         @dialog = create_dialog
@@ -217,16 +215,12 @@ module MyExtensions
 
       def self.create_dialog
         dialog = UI::HtmlDialog.new({ dialog_title: "ตารางรายการโหลด - Electrical Load Schedule", scrollable: true, resizable: true,
-                                      width: 1200, height: 800, style: UI::HtmlDialog::STYLE_DIALOG })
+                                      width: 1200, height: 800, style: UI::HtmlDialog::STYLE_DIALOG,
+                                      preferences_key: 'com.electrical.load_schedule' })
         
         html_path = File.join(EXTENSION_ROOT, 'html', 'load_schedule.html')
         
         dialog.set_file(html_path)
-        if @last_load_schedule_pos
-          dialog.set_position(@last_load_schedule_pos[0], @last_load_schedule_pos[1])
-        else
-          dialog.set_position(70, 60)
-        end
         
         dialog.add_action_callback("requestData") do |_action_context, _params|
           dialog.execute_script("populateTable(#{get_all_circuits_data.to_json})")
@@ -248,27 +242,17 @@ module MyExtensions
           export_data_to_csv
         end
 
-        dialog.add_action_callback("selectCircuit") do |_ctx, id|
+        dialog.add_action_callback("toggleCircuit") do |_ctx, id, selected|
           model = Sketchup.active_model
-          entity = model.active_entities.find { |e| e.persistent_id == id.to_i }
+          model.selection.clear
           
-          # If not found in active entities, could be in definition? Or deep nested?
-          # The persistent_id should be unique model-wide in recent SketchUp versions.
-          # However, find_entity_by_persistent_id works best on model.
-          
-          entity ||= model.find_entity_by_persistent_id(id.to_i)
-          
-          if entity
-             model.selection.clear
-             model.selection.add(entity)
-             # UIHelper.show_circuit_update(...) # Removed as per request (Select only)
+          if selected
+            entity = model.active_entities.find { |e| e.persistent_id == id.to_i }
+            entity ||= model.find_entity_by_persistent_id(id.to_i)
+            model.selection.add(entity) if entity
           end
         end
         
-        dialog.add_action_callback("savePosition") do |_ctx, x, y|
-          @last_load_schedule_pos = [x.to_i, y.to_i]
-        end
-
         dialog.set_on_closed { @dialog = nil }
         dialog
       end

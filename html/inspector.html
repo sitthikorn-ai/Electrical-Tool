@@ -153,11 +153,35 @@
                         </div>`;
                 }
 
+                if (item.definition_name) {
+                    html += `
+                        <div class="data-row">
+                            <div class="label">Definition Name</div>
+                            <div class="value">${item.definition_name}</div>
+                        </div>`;
+                }
+
                 html += `
                     <div class="data-row">
-                        <div class="label">Demand load (VA)</div>
-                        <div class="value">${item.load}</div>
+                        <div class="label">Load (Watts)</div>
+                        <div class="value">${item.load_watts}</div>
                     </div>`;
+
+                if (item.device && item.device !== 'None') {
+                    html += `
+                        <div class="data-row">
+                            <div class="label">Device</div>
+                            <div class="value">${item.device}</div>
+                        </div>`;
+                }
+
+                if (item.device_height && item.device_height !== 'None') {
+                    html += `
+                        <div class="data-row">
+                            <div class="label">Device Height</div>
+                            <div class="value">${item.device_height}</div>
+                        </div>`;
+                }
 
                 contentDiv.innerHTML = html;
             }

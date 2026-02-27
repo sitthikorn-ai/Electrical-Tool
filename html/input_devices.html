@@ -316,6 +316,90 @@
             margin: 4px 0 8px;
         }
 
+        /* ===== Searchable Select ===== */
+        .searchable-select {
+            position: relative;
+        }
+
+        .searchable-select-input {
+            width: 100%;
+            padding: 6px 28px 6px 8px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: #fff;
+            color: var(--text);
+            font-size: 12px;
+            font-family: inherit;
+            cursor: text;
+            transition: border-color 0.2s;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+        }
+
+        .searchable-select-input:hover {
+            border-color: var(--primary);
+        }
+
+        .searchable-select-input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 120, 215, 0.1);
+        }
+
+        .searchable-select-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .searchable-select-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 180px;
+            overflow-y: auto;
+            background: #fff;
+            border: 1px solid var(--primary);
+            border-top: none;
+            border-radius: 0 0 var(--radius) var(--radius);
+            z-index: 100;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+        }
+
+        .searchable-select-dropdown.open {
+            display: block;
+        }
+
+        .searchable-select-option {
+            padding: 5px 8px;
+            font-size: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: background 0.1s;
+        }
+
+        .searchable-select-option:hover,
+        .searchable-select-option.highlighted {
+            background: rgba(0, 120, 215, 0.1);
+            color: var(--primary);
+        }
+
+        .searchable-select-option.selected {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .searchable-select-no-match {
+            padding: 8px;
+            font-size: 11px;
+            color: var(--text-muted);
+            text-align: center;
+            font-style: italic;
+        }
+
         /* ===== Device Preview ===== */
         .preview-container {
             display: none;
@@ -681,7 +765,12 @@
                     <label>Select Device</label>
                     <button class="btn-cycle-toggle mode-all" id="btn-cycle-toggle" onclick="cycleTagView()" title="Toggle Tags: All / 3D / 2D">👁 All</button>
                 </div>
-                <select id="selectDevice">
+                <div class="searchable-select" id="searchable-device">
+                    <input type="text" class="searchable-select-input" id="device-search-input"
+                           placeholder="-- Search or Select Device --" autocomplete="off" />
+                    <div class="searchable-select-dropdown" id="device-search-dropdown"></div>
+                </div>
+                <select id="selectDevice" style="display:none;">
                     <option value="">-- Select Device --</option>
                 </select>
             </div>
@@ -699,7 +788,7 @@
                     </div>
                 </div>
                 <div class="preview-body" id="preview-body">
-                    <img id="device-preview" src="" alt="Preview" />
+                    <img id="device-preview" src="" alt="Preview" onclick="placeDevice()" style="cursor:pointer;" title="Click to place this device" />
                     <div class="preview-error" id="preview-error" style="display:none;">Preview not available</div>
                 </div>
             </div>
@@ -737,16 +826,22 @@
             <!-- Level Parameter -->
             <div class="form-group" style="margin-top:8px;">
                 <label>Level Parameter</label>
-                <select id="level-parameter" onchange="onLevelParameterChange()">
-                    <option value="">-- Select Level --</option>
-                    <option value="Height of Ceiling Light">Height of Ceiling Light</option>
-                    <option value="Height of Wall Light">Height of Wall Light</option>
-                    <option value="Height of Switch">Height of Switch</option>
-                    <option value="Height of Receptacle">Height of Receptacle</option>
-                    <option value="Height of Load Panel">Height of Load Panel</option>
-                    <option value="Custom height#1">Custom height#1</option>
-                    <option value="Custom height#2">Custom height#2</option>
-                </select>
+                <div style="display:flex; align-items:center; gap:4px;">
+                    <select id="level-parameter" onchange="onLevelParameterChange()" style="flex:1;">
+                        <option value="">-- Select Level --</option>
+                        <option value="Ceiling Light">Ceiling Light</option>
+                        <option value="Wall Light">Wall Light</option>
+                        <option value="Switch">Switch</option>
+                        <option value="Receptacle">Receptacle</option>
+                        <option value="Load Panel">Load Panel</option>
+                        <option value="Custom#1">Custom#1</option>
+                        <option value="Custom#2">Custom#2</option>
+                    </select>
+                    <input type="text" id="level-height-input" value="1.20" placeholder="e.g. 1.2m" style="width:70px; padding:6px 8px; border:1px solid var(--border); border-radius:var(--radius); font-size:12px; font-family:inherit; text-align:center; transition:border-color 0.2s;" />
+                    <button class="btn-apply-custom" onclick="updateDeviceHeight()">
+                        Update
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -763,7 +858,7 @@
             <div class="custom-wiring-row">
                 <div class="form-group">
                     <label>Custom Wiring</label>
-                    <input type="text" id="custom-wire-name" placeholder="e.g. 2x6mm² XLPE/CT20" />
+                    <input type="text" id="custom-wire-name" placeholder="e.g. 2x4.0mm² IEC01,20mm EMT"/>
                 </div>
                 <button class="btn-apply-custom-wire" id="btn-apply-custom-wire" onclick="applyCustomWiring()">
                     Apply
@@ -854,9 +949,7 @@
             if (devicesData.length > 0 && _pendingRestore.deviceIdx >= 0
                 && _pendingRestore.deviceIdx < devicesData.length && selectedDeviceIndex < 0) {
                 _isRestoring = true;
-                var sel = document.getElementById('selectDevice');
-                sel.value = _pendingRestore.deviceIdx;
-                sel.dispatchEvent(new Event('change'));
+                selectDeviceByIndex(_pendingRestore.deviceIdx);
                 _isRestoring = false;
             }
             // Restore wire if data loaded and not yet restored
@@ -935,9 +1028,7 @@
             renderDevices();
             // Auto-select the newly added device
             var newIdx = devicesData.length - 1;
-            var sel = document.getElementById('selectDevice');
-            sel.value = newIdx;
-            sel.dispatchEvent(new Event('change'));
+            selectDeviceByIndex(newIdx);
             setStatus('success', 'Custom Device "' + newDevice[0] + '" created — Ready to Place');
             autoFit();
         }
@@ -999,16 +1090,21 @@
             }
         }
 
+        // Cached filtered device list for the searchable dropdown
+        var _filteredDeviceOptions = [];
+
         function renderDevices() {
             const select = document.getElementById('selectDevice');
             select.innerHTML = '<option value="">-- Select Device --</option>';
 
+            _filteredDeviceOptions = [];
             devicesData.forEach(function (device, idx) {
                 if (currentFilter === 'all' || device[2] === currentFilter) {
                     const opt = document.createElement('option');
                     opt.value = idx;
                     opt.textContent = device[0];
                     select.appendChild(opt);
+                    _filteredDeviceOptions.push({ idx: idx, label: device[0] });
                 }
             });
 
@@ -1016,6 +1112,11 @@
             selectedDeviceIndex = -1;
             document.getElementById('btn-place-device').disabled = true;
             document.getElementById('btn-place-on-wall').disabled = true;
+
+            // Reset search input and rebuild dropdown
+            var searchInput = document.getElementById('device-search-input');
+            searchInput.value = '';
+            rebuildDeviceDropdown('');
         }
 
         function renderWires() {
@@ -1029,6 +1130,155 @@
                 select.appendChild(opt);
             });
         }
+
+        // =============================================
+        // SEARCHABLE DEVICE DROPDOWN
+        // =============================================
+        var _highlightedIdx = -1; // index within visible options in dropdown
+
+        function rebuildDeviceDropdown(query) {
+            var dropdown = document.getElementById('device-search-dropdown');
+            dropdown.innerHTML = '';
+            _highlightedIdx = -1;
+            var lowerQ = (query || '').toLowerCase();
+
+            var matched = _filteredDeviceOptions.filter(function(opt) {
+                return lowerQ === '' || opt.label.toLowerCase().indexOf(lowerQ) >= 0;
+            });
+
+            if (matched.length === 0) {
+                var noMatch = document.createElement('div');
+                noMatch.className = 'searchable-select-no-match';
+                noMatch.textContent = 'No device found';
+                dropdown.appendChild(noMatch);
+                return;
+            }
+
+            matched.forEach(function(opt) {
+                var div = document.createElement('div');
+                div.className = 'searchable-select-option';
+                if (opt.idx === selectedDeviceIndex) div.className += ' selected';
+                div.setAttribute('data-value', opt.idx);
+                div.textContent = opt.label;
+                div.addEventListener('mousedown', function(e) {
+                    e.preventDefault(); // prevent input blur
+                    selectDeviceByIndex(opt.idx);
+                    closeDeviceDropdown();
+                });
+                dropdown.appendChild(div);
+            });
+        }
+
+        function selectDeviceByIndex(idx) {
+            // Sync hidden <select>
+            var select = document.getElementById('selectDevice');
+            select.value = idx;
+
+            // Update search input text
+            var searchInput = document.getElementById('device-search-input');
+            var device = devicesData[idx];
+            searchInput.value = device ? device[0] : '';
+
+            // Fire the device selection logic
+            if (idx === '' || idx < 0 || idx === undefined) {
+                selectedDeviceIndex = -1;
+                document.getElementById('btn-place-device').disabled = true;
+                document.getElementById('btn-place-on-wall').disabled = true;
+                document.getElementById('preview-container').style.display = 'none';
+                return;
+            }
+            selectedDeviceIndex = parseInt(idx);
+            if (!_isRestoring) {
+                resetOffset();
+            }
+            sketchup.saveLastSelection(selectedDeviceIndex, selectedWireIndex);
+            document.getElementById('btn-place-device').disabled = false;
+            document.getElementById('btn-place-on-wall').disabled = false;
+            sketchup.getDevicePreview(selectedDeviceIndex, currentPreviewView);
+            autoFit();
+        }
+
+        function openDeviceDropdown() {
+            var dropdown = document.getElementById('device-search-dropdown');
+            dropdown.classList.add('open');
+        }
+
+        function closeDeviceDropdown() {
+            var dropdown = document.getElementById('device-search-dropdown');
+            dropdown.classList.remove('open');
+            _highlightedIdx = -1;
+        }
+
+        function highlightOption(delta) {
+            var dropdown = document.getElementById('device-search-dropdown');
+            var options = dropdown.querySelectorAll('.searchable-select-option');
+            if (options.length === 0) return;
+            // Remove old highlight
+            if (_highlightedIdx >= 0 && _highlightedIdx < options.length) {
+                options[_highlightedIdx].classList.remove('highlighted');
+            }
+            _highlightedIdx += delta;
+            if (_highlightedIdx < 0) _highlightedIdx = options.length - 1;
+            if (_highlightedIdx >= options.length) _highlightedIdx = 0;
+            options[_highlightedIdx].classList.add('highlighted');
+            // Scroll into view
+            options[_highlightedIdx].scrollIntoView({ block: 'nearest' });
+        }
+
+        // ---- Input event listeners ----
+        (function() {
+            var searchInput = document.getElementById('device-search-input');
+
+            searchInput.addEventListener('focus', function() {
+                rebuildDeviceDropdown(this.value);
+                openDeviceDropdown();
+            });
+
+            searchInput.addEventListener('input', function() {
+                rebuildDeviceDropdown(this.value);
+                openDeviceDropdown();
+            });
+
+            searchInput.addEventListener('blur', function() {
+                // Delay to allow mousedown on option
+                setTimeout(function() { closeDeviceDropdown(); }, 150);
+            });
+
+            searchInput.addEventListener('keydown', function(e) {
+                var dropdown = document.getElementById('device-search-dropdown');
+                var options = dropdown.querySelectorAll('.searchable-select-option');
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (!dropdown.classList.contains('open')) {
+                        rebuildDeviceDropdown(this.value);
+                        openDeviceDropdown();
+                    }
+                    highlightOption(1);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    highlightOption(-1);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (_highlightedIdx >= 0 && _highlightedIdx < options.length) {
+                        var val = options[_highlightedIdx].getAttribute('data-value');
+                        selectDeviceByIndex(parseInt(val));
+                        closeDeviceDropdown();
+                        this.blur();
+                    }
+                } else if (e.key === 'Escape') {
+                    closeDeviceDropdown();
+                    this.blur();
+                }
+            });
+        })();
+
+        // Close dropdown if clicking outside
+        document.addEventListener('mousedown', function(e) {
+            var wrapper = document.getElementById('searchable-device');
+            if (!wrapper.contains(e.target)) {
+                closeDeviceDropdown();
+            }
+        });
 
         // =============================================
         // EVENT HANDLERS
@@ -1053,30 +1303,6 @@
                     sendOffsetLiveToRuby();
                 }, 500);
             });
-        });
-
-        document.getElementById('selectDevice').addEventListener('change', function () {
-            const val = this.value;
-            if (val === '') {
-                selectedDeviceIndex = -1;
-                document.getElementById('btn-place-device').disabled = true;
-                document.getElementById('btn-place-on-wall').disabled = true;
-                document.getElementById('preview-container').style.display = 'none';
-                return;
-            }
-            selectedDeviceIndex = parseInt(val);
-            // Reset offset only when user manually selects a new component (not restoring)
-            if (!_isRestoring) {
-                resetOffset();
-            }
-            // Save selection to Ruby for persistence
-            sketchup.saveLastSelection(selectedDeviceIndex, selectedWireIndex);
-            const device = devicesData[selectedDeviceIndex];
-            document.getElementById('btn-place-device').disabled = false;
-            document.getElementById('btn-place-on-wall').disabled = false;
-            // Request thumbnail preview from Ruby
-            sketchup.getDevicePreview(selectedDeviceIndex, currentPreviewView);
-            autoFit();
         });
 
         document.getElementById('selectWire').addEventListener('change', function () {
@@ -1191,6 +1417,25 @@
             var select = document.getElementById('level-parameter');
             var selectedLevel = select.value;
             sketchup.setLevelParameter(selectedLevel);
+        }
+
+        function updateDeviceHeight() {
+            var heightVal = document.getElementById('level-height-input').value.trim();
+            var levelParam = document.getElementById('level-parameter').value;
+            if (!heightVal) {
+                setStatus('error', 'Please enter a height value (e.g. 1.2m, 120cm, 1200mm)');
+                return;
+            }
+            setStatus('', 'Updating device height to ' + heightVal + '...');
+            sketchup.updateDeviceHeight(heightVal, levelParam);
+        }
+
+        function onDeviceHeightUpdated(count) {
+            setStatus('success', 'Updated EE_Device height on ' + count + ' component(s)');
+        }
+
+        function onDeviceHeightError(msg) {
+            setStatus('error', 'Height Update Error: ' + msg);
         }
 
         // =============================================

@@ -4,7 +4,11 @@ module MyExtensions
   module ElectricalCalculator
     module UILogic
       
-      def self.prompt_create_circuit
+      def self.toggle_create_circuit
+        if UIHelper.close_circuit_dialogs
+          return
+        end
+
         selection = Sketchup.active_model.selection
         if selection.empty?
           UIHelper.show_alert('Selection Error', 'กรุณาเลือกวัตถุอย่างน้อย 1 ชิ้น', 'warning')

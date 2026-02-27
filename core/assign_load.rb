@@ -128,55 +128,58 @@ module MyExtensions
     end
 
     module UILogic
-      @last_pos = nil
       @assign_load_dialog = nil
 
-      def self.prompt_set_load
-        selection = Sketchup.active_model.selection
-        return UI.messagebox('กรุณาเลือกวัตถุอย่างน้อย 1 ชิ้น') if selection.empty?
-
+      def self.toggle_set_load
         if @assign_load_dialog
-          @assign_load_dialog.bring_to_front
+          @assign_load_dialog.close
           return
         end
+
+        selection = Sketchup.active_model.selection
+        return UI.messagebox('กรุณาเลือกวัตถุอย่างน้อย 1 ชิ้น') if selection.empty?
         
         # Create dialog
         dialog = UI::HtmlDialog.new({
           dialog_title: "Assign Electrical Load",
+          preferences_key: 'com.electrical.assign_load',
           scrollable: false,
           resizable: true,
-          width: 500,
+          width: 400,
           height: 300,
           style: UI::HtmlDialog::STYLE_DIALOG
         })
 
         html_path = File.join(EXTENSION_ROOT, 'html', 'assign_load.html')
         dialog.set_file(html_path)
-        if @last_pos
-          dialog.set_position(@last_pos[0], @last_pos[1])
-        else
-          dialog.set_position(70, 115)
-        end
 
         # --- Callbacks ---
+        dialog.add_action_callback("applyDevice") do |_action_context, device, device_height|
+          Sketchup.active_model.start_operation('Set Device', true)
+          selection.each { |entity| AttributesManager.set_device_attributes(entity, device, device_height) }
+          Sketchup.active_model.commit_operation
+
+          applied_entities = selection.to_a
+          selection.clear
+
+          UI.start_timer(0, false) do
+            tool = HighlightTool.new(applied_entities, 2.0)
+            Sketchup.active_model.select_tool(tool)
+          end
+        end
+
         dialog.add_action_callback("applyLoad") do |_action_context, watts, load_type|
           Sketchup.active_model.start_operation('Set Load', true)
           selection.each { |entity| AttributesManager.set_load_attributes(entity, watts, load_type) }
           Sketchup.active_model.commit_operation
 
-          # Keep reference to entities, clear selection, then draw green overlay
           applied_entities = selection.to_a
           selection.clear
 
-          # Defer select_tool to main thread (HtmlDialog callback safety)
           UI.start_timer(0, false) do
-            tool = HighlightTool.new(applied_entities, 3.0)
+            tool = HighlightTool.new(applied_entities, 2.0)
             Sketchup.active_model.select_tool(tool)
           end
-        end
-
-        dialog.add_action_callback("savePosition") do |_action_context, x, y|
-          @last_pos = [x.to_i, y.to_i]
         end
 
         dialog.add_action_callback("closeDialog") do |_action_context|

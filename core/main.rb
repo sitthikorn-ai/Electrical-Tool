@@ -38,14 +38,61 @@ module MyExtensions
     module AttributesManager
       DICT_LOAD = 'SU_Electrical_Load'.freeze
       DICT_CIRCUIT = 'SU_Electrical_Circuit'.freeze
-      def self.set_load_attributes(entity, watts, load_type)
+      DICT_HEIGHT = 'SU_Electrical_Height'.freeze
+
+      def self.set_load_attributes(entity, watts, load_type, device = nil, device_height = nil)
         # Set on Instance
         entity.set_attribute(DICT_LOAD, 'load_watts', watts.to_f)
         entity.set_attribute(DICT_LOAD, 'load_type', load_type.to_s)
+        
+        if device && device_height
+          entity.set_attribute(DICT_HEIGHT, 'device', device.to_s)
+          entity.set_attribute(DICT_HEIGHT, 'device_height', device_height.to_f)
+          update_ee_device_height(entity, device_height.to_f)
+        end
+
         # Set on Definition (for persistence)
         if entity.respond_to?(:definition)
            entity.definition.set_attribute(DICT_LOAD, 'load_watts', watts.to_f)
            entity.definition.set_attribute(DICT_LOAD, 'load_type', load_type.to_s)
+           
+           if device && device_height
+             entity.definition.set_attribute(DICT_HEIGHT, 'device', device.to_s)
+             entity.definition.set_attribute(DICT_HEIGHT, 'device_height', device_height.to_f)
+           end
+        end
+      end
+
+      def self.set_device_attributes(entity, device, device_height)
+        entity.set_attribute(DICT_HEIGHT, 'device', device.to_s)
+        entity.set_attribute(DICT_HEIGHT, 'device_height', device_height.to_f)
+        update_ee_device_height(entity, device_height.to_f)
+
+        if entity.respond_to?(:definition)
+          entity.definition.set_attribute(DICT_HEIGHT, 'device', device.to_s)
+          entity.definition.set_attribute(DICT_HEIGHT, 'device_height', device_height.to_f)
+        end
+      end
+
+      def self.update_ee_device_height(entity, height)
+        # Find child group or component instance named "EE_Device"
+        # We need to search in entity's definition entities if it's an instance, 
+        # or in its entities if it's a group.
+        ents = nil
+        if entity.is_a?(Sketchup::Group)
+          ents = entity.entities
+        elsif entity.is_a?(Sketchup::ComponentInstance)
+          ents = entity.definition.entities
+        end
+
+        return unless ents
+
+        ee_device = ents.find { |e| (e.is_a?(Sketchup::Group) || e.is_a?(Sketchup::ComponentInstance)) && e.name == "EE_Device" }
+        if ee_device
+          # Set the Z height of the transformation
+          tr = ee_device.transformation.to_a
+          tr[14] = height.m # Convert meters to internal inches
+          ee_device.transformation = Geom::Transformation.new(tr)
         end
       end
 
@@ -61,6 +108,19 @@ module MyExtensions
         
         { watts: (watts || 0.0).to_f, load_type: (load_type || 'General').to_s }
       end
+
+      def self.get_height_attributes(entity)
+        device = entity.get_attribute(DICT_HEIGHT, 'device')
+        device_height = entity.get_attribute(DICT_HEIGHT, 'device_height')
+
+        if (device.nil? || device_height.nil?) && entity.respond_to?(:definition)
+          device ||= entity.definition.get_attribute(DICT_HEIGHT, 'device')
+          device_height ||= entity.definition.get_attribute(DICT_HEIGHT, 'device_height')
+        end
+
+        { device: device, device_height: device_height }
+      end
+
       def self.set_circuit_attributes(group, results); results.each { |key, value| group.set_attribute(DICT_CIRCUIT, key.to_s, value) }; end
       def self.get_all_circuit_attributes(group); dict = group.attribute_dictionary(DICT_CIRCUIT); dict ? dict.to_h.merge(entityID: group.entityID) : nil; end
       def self.is_circuit_group?(entity); entity.is_a?(Sketchup::Group) && !entity.attribute_dictionary(DICT_CIRCUIT).nil?; end
@@ -119,34 +179,43 @@ module MyExtensions
     require_relative 'create_circuit'
     require_relative 'load_schedule'
     require_relative 'input_devices'
+    require_relative 'inspector'
 
     # --- [ Toolbar Initialization ] ---
     unless file_loaded?(__FILE__)
       toolbar = UI::Toolbar.new('SKH Electrical')
       
-      cmd_input_devices = UI::Command.new('Input Devices') { UILogic.show_input_devices_dialog }
+      cmd_input_devices = UI::Command.new('Input Devices') { UILogic.toggle_input_devices_dialog }
       cmd_input_devices.tooltip = 'วาง Device / เลือก Wiring'
       cmd_input_devices.small_icon = File.join(EXTENSION_ROOT, 'images', 'input_devices_icon.png')
       cmd_input_devices.large_icon = File.join(EXTENSION_ROOT, 'images', 'input_devices_icon.png')
       toolbar.add_item(cmd_input_devices)
+      toolbar.add_separator
 
-      cmd_set_load = UI::Command.new('Set Load') { UILogic.prompt_set_load }
+      cmd_set_load = UI::Command.new('Set Load') { UILogic.toggle_set_load }
       cmd_set_load.tooltip = 'กำหนดโหลดไฟฟ้า (W) ให้กับวัตถุ'
       cmd_set_load.small_icon = File.join(EXTENSION_ROOT, 'images', 'set_load_icon.png')
       cmd_set_load.large_icon = File.join(EXTENSION_ROOT, 'images', 'set_load_icon.png')
       toolbar.add_item(cmd_set_load)
 
-      cmd_create_circuit = UI::Command.new('Create Circuit') { UILogic.prompt_create_circuit }
+      cmd_create_circuit = UI::Command.new('Create Circuit') { UILogic.toggle_create_circuit }
       cmd_create_circuit.tooltip = 'สร้าง/อัปเดตวงจรไฟฟ้า'
       cmd_create_circuit.small_icon = File.join(EXTENSION_ROOT, 'images', 'create_circuit_icon.png')
       cmd_create_circuit.large_icon = File.join(EXTENSION_ROOT, 'images', 'create_circuit_icon.png')
       toolbar.add_item(cmd_create_circuit)
 
-      cmd_show_schedule = UI::Command.new('Show Load Schedule') { UILogic.show_load_schedule }
+      cmd_show_schedule = UI::Command.new('Show Load Schedule') { UILogic.toggle_load_schedule }
       cmd_show_schedule.tooltip = 'แสดงตารางโหลด'
       cmd_show_schedule.small_icon = File.join(EXTENSION_ROOT, 'images', 'show_schedule_icon.png')
       cmd_show_schedule.large_icon = File.join(EXTENSION_ROOT, 'images', 'show_schedule_icon.png')
       toolbar.add_item(cmd_show_schedule)
+      toolbar.add_separator
+
+      cmd_inspector = UI::Command.new('Inspector') { UILogic.toggle_inspector }
+      cmd_inspector.tooltip = 'ตรวจสอบคุณสมบัติของชิ้นงาน (Attributes)'
+      cmd_inspector.small_icon = File.join(EXTENSION_ROOT, 'images', 'inspector_icon.png')
+      cmd_inspector.large_icon = File.join(EXTENSION_ROOT, 'images', 'inspector_icon.png')
+      toolbar.add_item(cmd_inspector)
 
       toolbar.show
       file_loaded(__FILE__)

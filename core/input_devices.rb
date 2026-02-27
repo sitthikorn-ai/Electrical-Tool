@@ -34,6 +34,10 @@ module MyExtensions
         @offset_y = Sketchup.read_default('SKH_PlaceDevice', 'OffsetY', 0.0).to_f
         @offset_z = Sketchup.read_default('SKH_PlaceDevice', 'OffsetZ', 0.0).to_f
         @offset_mode = false  # true when waiting for VCB offset input
+        # Z-Plane: load last used value from preferences.
+        # Always store/read as String to avoid SketchUp read_default type mismatch.
+        saved_z = Sketchup.read_default('SKH_PlaceDevice', 'ZPlaneHeight', '')
+        @z_plane_height = (saved_z.is_a?(String) && saved_z.strip != '') ? saved_z.to_f : (saved_z.is_a?(Numeric) ? saved_z.to_f : nil)
         # Copy Array state
         @array_enabled = false  # Toggle with Tab
         @array_start_pos = nil
@@ -84,19 +88,19 @@ module MyExtensions
         # Apply Z-Plane constraint if set
         base_pos = raw_pos
         if @z_plane_height
-          # Hybrid: if InputPoint snapped to geometry near the Z-plane, keep the
-          # snapped XY (preserves vertex/edge/midpoint inference). Otherwise fall
-          # back to ray-plane intersection for free-space movement.
+          # Snap reference at Z = 0 ground plane for XY inference, then place
+          # at Z-Plane height. This lets the user align to geometry on the
+          # ground plane while the component is placed at the desired height.
           z_tol = 0.1  # tolerance in inches (~2.5 mm)
-          if (raw_pos.z - @z_plane_height).abs < z_tol
-            # InputPoint already snapped near the Z-plane — use its XY, force exact Z
+          if raw_pos.z.abs < z_tol
+            # InputPoint snapped near Z = 0 ground plane — use its XY, apply Z-Plane height
             base_pos = Geom::Point3d.new(raw_pos.x, raw_pos.y, @z_plane_height)
           else
-            # Free space — project mouse ray onto the Z-plane
-            z_plane = [Geom::Point3d.new(0, 0, @z_plane_height), Z_AXIS]
+            # Free space — project mouse ray onto Z = 0 ground plane for XY, then apply Z-Plane height
+            ground_plane = [ORIGIN, Z_AXIS]
             ray = view.pickray(x, y)
-            pt = Geom.intersect_line_plane(ray, z_plane)
-            base_pos = pt ? pt : Geom::Point3d.new(raw_pos.x, raw_pos.y, @z_plane_height)
+            pt = Geom.intersect_line_plane(ray, ground_plane)
+            base_pos = pt ? Geom::Point3d.new(pt.x, pt.y, @z_plane_height) : Geom::Point3d.new(raw_pos.x, raw_pos.y, @z_plane_height)
           end
         end
 
@@ -139,6 +143,7 @@ module MyExtensions
         if @z_plane_mode
            # Set Z-Plane
            @z_plane_height = @input_point.position.z
+           Sketchup.write_default('SKH_PlaceDevice', 'ZPlaneHeight', @z_plane_height.to_f.to_s)
            @z_plane_mode = false
            update_status_text
            view.invalidate
@@ -235,6 +240,7 @@ module MyExtensions
           begin
             length = text.to_l
             @z_plane_height = length
+            Sketchup.write_default('SKH_PlaceDevice', 'ZPlaneHeight', @z_plane_height.to_f.to_s)
             @z_plane_mode = false
             Sketchup.status_text = "Z-Plane Set: #{length}"
             view.invalidate
@@ -576,6 +582,9 @@ module MyExtensions
           dist = @array_start_pos.distance(@array_end_pos)
           Sketchup.vcb_label = "Array (*n /n):"
           Sketchup.vcb_value = dist.to_l.to_s
+        elsif @z_plane_height
+          Sketchup.vcb_label = "Z-Plane:"
+          Sketchup.vcb_value = @z_plane_height.to_l.to_s
         elsif @offset_x != 0 || @offset_y != 0 || @offset_z != 0
           Sketchup.vcb_label = "Offset:"
           Sketchup.vcb_value = "#{@offset_x.to_l},#{@offset_y.to_l},#{@offset_z.to_l}"
@@ -3181,6 +3190,67 @@ module MyExtensions
           rescue => e
             model.abort_operation rescue nil
             dialog.execute_script("onCustomDeviceError('#{e.message.gsub("'", "\\\\'")}')")
+          end
+        end
+
+        # --- Callback: Update Device Height — adjusts EE_Device child group Z position ---
+        dialog.add_action_callback("updateDeviceHeight") do |_ctx, height_str, level_param|
+          begin
+            # Parse like SketchUp VCB: supports "1.2m", "120cm", "1200mm", or plain number in model units
+            height_internal = height_str.to_s.strip.to_l  # Returns Length in internal inches
+            height_m = height_internal.to_m               # Convert to meters for attribute storage
+            level_param = level_param.to_s.strip
+
+            # Map level parameter to device type key in SU_Electrical_Height
+            device_map = {
+              'Ceiling Light' => 'ceiling_lighting',
+              'Wall Light'    => 'wall_lighting',
+              'Switch'        => 'switch',
+              'Receptacle'    => 'receptacle',
+              'Load Panel'    => 'load_panel'
+            }
+            target_device = device_map[level_param]
+
+            model = Sketchup.active_model
+            updated_count = 0
+
+            model.start_operation('Update Device Height', true)
+
+            # Scan all entities in the active context
+            entities_to_scan = model.active_entities.to_a
+            entities_to_scan.each do |entity|
+              next unless entity.is_a?(Sketchup::ComponentInstance) || entity.is_a?(Sketchup::Group)
+              next unless entity.valid?
+
+              # Check if entity has SU_Electrical_Height attribute
+              dict = entity.attribute_dictionary(AttributesManager::DICT_HEIGHT)
+              dict ||= entity.respond_to?(:definition) ? entity.definition.attribute_dictionary(AttributesManager::DICT_HEIGHT) : nil
+              next unless dict
+
+              device_val = dict['device'].to_s
+
+              # If a level parameter is selected, only update matching device types
+              if target_device && !target_device.empty?
+                next unless device_val == target_device
+              end
+
+              # Update the stored device_height attribute
+              entity.set_attribute(AttributesManager::DICT_HEIGHT, 'device_height', height_m)
+              if entity.respond_to?(:definition)
+                entity.definition.set_attribute(AttributesManager::DICT_HEIGHT, 'device_height', height_m)
+              end
+
+              # Find and move the child group/component named "EE_Device"
+              AttributesManager.update_ee_device_height(entity, height_m)
+              updated_count += 1
+            end
+
+            model.commit_operation
+
+            dialog.execute_script("onDeviceHeightUpdated(#{updated_count})")
+          rescue => e
+            model.abort_operation rescue nil
+            dialog.execute_script("onDeviceHeightError('#{e.message.gsub("'", "\\\\'")}')")
           end
         end
 
