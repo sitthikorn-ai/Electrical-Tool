@@ -81,9 +81,14 @@
             font-size: 8px;
             vertical-align: middle;
             height: 18px;
+            line-height: 16px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+        }
+
+        .circuit-table tbody tr {
+            height: 18px;
         }
 
         .circuit-table th {
@@ -103,6 +108,7 @@
         }
 
         .sld-cell {
+            position: static !important;
             padding: 0 !important;
             vertical-align: top !important;
         }
@@ -150,14 +156,7 @@
             font-weight: bold;
         }
 
-        .clickable .cell-wrap {
-            text-decoration: underline;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .clickable:hover,
-        .clickable:hover .cell-wrap {
+        .clickable:hover {
             color: #0066d6 !important;
         }
 
@@ -222,30 +221,16 @@
         }
 
         .span-group-cell {
+            position: static !important;
             vertical-align: middle !important;
             padding: 0 3px !important;
-        }
-
-        .span-group-cell .cell-wrap {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            line-height: 1.2;
-            padding: 0 2px;
             font-size: 7.5px;
+            text-align: center;
         }
 
-        .span-group-cell.la .cell-wrap {
-            justify-content: flex-start;
-            padding-left: 3px;
+        .span-group-cell.la {
+            text-align: left;
+            padding-left: 3px !important;
         }
 
         .col-resizer {
@@ -485,9 +470,8 @@
         //   ((slot-1)/2)%3 => 0=R, 1=S, 2=T
         function generateSLD(numRows) {
             const rowH = 18;
-            const totalH = numRows * rowH + 30;
+            const totalH = numRows * rowH;
             const cx = 65;
-            const busStart = 14;
             const pg = 8; // spacing between busbars
 
             // Busbar X positions: R(left), S(center), T(right)
@@ -496,23 +480,24 @@
             const busT = cx + pg;
             const busX = [busR, busS, busT]; // indexed by phase 0,1,2
 
-            let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 130 ${totalH}" style="width:100%;height:${totalH}px;">`;
+            let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 130 ${totalH}" style="width:100%;height:${totalH}px;display:block;">`;
 
-            // Phase labels at top (R, S, T) — bold and clear
-            s += `<text x="${busR}" y="${busStart}" text-anchor="middle" font-size="8" font-weight="bold" font-family="Tahoma">R</text>`;
-            s += `<text x="${busS}" y="${busStart}" text-anchor="middle" font-size="8" font-weight="bold" font-family="Tahoma">S</text>`;
-            s += `<text x="${busT}" y="${busStart}" text-anchor="middle" font-size="8" font-weight="bold" font-family="Tahoma">T</text>`;
+            // Phase labels at top (R, S, T) — inside first row area
+            const labelY = 6;
+            s += `<text x="${busR}" y="${labelY}" text-anchor="middle" font-size="7" font-weight="bold" font-family="Tahoma">R</text>`;
+            s += `<text x="${busS}" y="${labelY}" text-anchor="middle" font-size="7" font-weight="bold" font-family="Tahoma">S</text>`;
+            s += `<text x="${busT}" y="${labelY}" text-anchor="middle" font-size="7" font-weight="bold" font-family="Tahoma">T</text>`;
 
             // Bus bars (3 vertical lines)
-            const bTop = busStart + 3;
-            const bEnd = totalH - 18;
+            const bTop = 8;
+            const bEnd = totalH - 4;
             s += `<line x1="${busR}" y1="${bTop}" x2="${busR}" y2="${bEnd}" stroke="#000" stroke-width="1.2"/>`;
             s += `<line x1="${busS}" y1="${bTop}" x2="${busS}" y2="${bEnd}" stroke="#000" stroke-width="1.2"/>`;
             s += `<line x1="${busT}" y1="${bTop}" x2="${busT}" y2="${bEnd}" stroke="#000" stroke-width="1.2"/>`;
 
             // Branches — each circuit connects to the correct busbar
             for (let i = 0; i < numRows; i++) {
-                const y = bTop + 6 + i * rowH;
+                const y = Math.round(rowH / 2 + i * rowH);
                 const oddN = i * 2 + 1;   // left circuit number
                 const evenN = i * 2 + 2;  // right circuit number
 
@@ -701,16 +686,12 @@
             const td = document.createElement('td');
             if (cls) td.className = cls;
             if (color) td.style.color = color;
+            const displayText = (text != null) ? String(text).replace(/\n/g, ', ') : '';
             if (rowSpanVal && rowSpanVal > 1) {
                 td.rowSpan = rowSpanVal;
                 td.classList.add('span-group-cell');
-                const wrap = document.createElement('div');
-                wrap.className = 'cell-wrap';
-                wrap.textContent = text;
-                td.appendChild(wrap);
-            } else {
-                td.textContent = text;
             }
+            td.textContent = displayText;
 
             if (slotNo !== undefined) {
                 td.setAttribute('data-slot', slotNo);
