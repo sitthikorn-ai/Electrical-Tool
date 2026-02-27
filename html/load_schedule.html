@@ -13,10 +13,10 @@
 
         body {
             font-family: 'Tahoma', 'Leelawadee UI', 'Microsoft Sans Serif', sans-serif;
-            font-size: 10px;
+            font-size: 9px;
             background: #fff;
             color: #000;
-            padding: 8px;
+            padding: 4px;
         }
 
         .main-table {
@@ -28,21 +28,21 @@
         .main-table td,
         .main-table th {
             border: 1px solid #000;
-            padding: 2px 4px;
+            padding: 1px 3px;
             vertical-align: middle;
-            font-size: 10px;
+            font-size: 9px;
         }
 
         .title-row td {
             text-align: center;
             font-weight: bold;
-            font-size: 13px;
-            padding: 4px;
+            font-size: 11px;
+            padding: 2px;
         }
 
         .header-info td {
-            font-size: 10px;
-            padding: 2px 6px;
+            font-size: 9px;
+            padding: 1px 4px;
             position: relative;
         }
 
@@ -56,30 +56,15 @@
             border-bottom: 1px dotted #999;
             background: transparent;
             font-family: inherit;
-            font-size: 10px;
+            font-size: 9px;
             outline: none;
             width: 100%;
-            padding: 1px 2px;
+            padding: 0px 2px;
         }
 
         .header-info input:focus {
             border-bottom: 1px solid #0066d6;
             background: #f0f7ff;
-        }
-
-        .header-resizer {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 5px;
-            height: 100%;
-            cursor: col-resize;
-            z-index: 10;
-        }
-
-        .header-resizer:hover,
-        .header-resizer.active {
-            background: rgba(0,102,214,0.3);
         }
 
         .circuit-table {
@@ -91,11 +76,11 @@
         .circuit-table th,
         .circuit-table td {
             border: 1px solid #000;
-            padding: 1px 3px;
+            padding: 0px 2px;
             text-align: center;
-            font-size: 9px;
+            font-size: 8px;
             vertical-align: middle;
-            height: 24px;
+            height: 18px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -104,17 +89,17 @@
         .circuit-table th {
             background-color: #fff;
             font-weight: bold;
-            font-size: 9px;
+            font-size: 8px;
         }
 
         .circuit-table .sub-header th {
             font-weight: normal;
-            font-size: 8.5px;
+            font-size: 7.5px;
         }
 
         .circuit-table td.la {
             text-align: left;
-            padding-left: 4px;
+            padding-left: 3px;
         }
 
         .sld-cell {
@@ -165,7 +150,14 @@
             font-weight: bold;
         }
 
-        .clickable:hover {
+        .clickable .cell-wrap {
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .clickable:hover,
+        .clickable:hover .cell-wrap {
             color: #0066d6 !important;
         }
 
@@ -178,16 +170,16 @@
 
         .calc-row td {
             background: #f0f4ff;
-            padding: 3px 6px;
-            font-size: 10px;
+            padding: 1px 4px;
+            font-size: 9px;
         }
 
         .calc-row select {
             border: 1px solid #888;
             background: #fff;
             font-family: inherit;
-            font-size: 10px;
-            padding: 2px 4px;
+            font-size: 9px;
+            padding: 1px 3px;
             width: 100%;
             border-radius: 2px;
             cursor: pointer;
@@ -204,9 +196,9 @@
             border: none;
             background: transparent;
             font-family: inherit;
-            font-size: 10px;
+            font-size: 9px;
             width: 100%;
-            padding: 1px 2px;
+            padding: 0px 2px;
         }
 
         .toolbar button.active {
@@ -242,12 +234,18 @@
             bottom: 0;
             display: flex;
             align-items: center;
+            justify-content: center;
             overflow: hidden;
             text-overflow: ellipsis;
-            white-space: pre-line;
-            word-break: break-all;
-            line-height: 1.3;
-            padding: 0 3px;
+            white-space: nowrap;
+            line-height: 1.2;
+            padding: 0 2px;
+            font-size: 7.5px;
+        }
+
+        .span-group-cell.la .cell-wrap {
+            justify-content: flex-start;
+            padding-left: 3px;
         }
 
         .col-resizer {
@@ -343,27 +341,27 @@
             <td colspan="31" style="padding:0; border:none;">
                 <table class="circuit-table" id="circuitTable">
                     <colgroup>
-                        <col style="width:120px"><!-- 0: รายการ L -->
+                        <col style="width:100px"><!-- 0: รายการ L -->
                         <col data-resizable="1"><!-- 1: SIZE L (auto-fit) -->
-                        <col style="width:30px"><!-- 2: TYPE L -->
-                        <col style="width:45px"><!-- 3: ท่อ L -->
-                        <col style="width:28px"><!-- 4: POLE L -->
-                        <col style="width:28px"><!-- 5: AT L -->
-                        <col style="width:38px"><!-- 6: R -->
-                        <col style="width:38px"><!-- 7: S -->
-                        <col style="width:38px"><!-- 8: T -->
-                        <col style="width:30px"><!-- 9: เลขที่ L -->
-                        <col style="width:140px"><!-- 10: SLD -->
-                        <col style="width:30px"><!-- 11: เลขที่ R -->
-                        <col style="width:38px"><!-- 12: R -->
-                        <col style="width:38px"><!-- 13: S -->
-                        <col style="width:38px"><!-- 14: T -->
-                        <col style="width:28px"><!-- 15: POLE R -->
-                        <col style="width:28px"><!-- 16: AT R -->
-                        <col style="width:45px"><!-- 17: ท่อ R -->
+                        <col style="width:26px"><!-- 2: TYPE L -->
+                        <col style="width:36px"><!-- 3: ท่อ L -->
+                        <col style="width:24px"><!-- 4: POLE L -->
+                        <col style="width:24px"><!-- 5: AT L -->
+                        <col style="width:34px"><!-- 6: R -->
+                        <col style="width:34px"><!-- 7: S -->
+                        <col style="width:34px"><!-- 8: T -->
+                        <col style="width:24px"><!-- 9: เลขที่ L -->
+                        <col style="width:80px"><!-- 10: SLD -->
+                        <col style="width:24px"><!-- 11: เลขที่ R -->
+                        <col style="width:34px"><!-- 12: R -->
+                        <col style="width:34px"><!-- 13: S -->
+                        <col style="width:34px"><!-- 14: T -->
+                        <col style="width:24px"><!-- 15: POLE R -->
+                        <col style="width:24px"><!-- 16: AT R -->
+                        <col style="width:36px"><!-- 17: ท่อ R -->
                         <col data-resizable="1"><!-- 18: SIZE R (auto-fit) -->
-                        <col style="width:30px"><!-- 19: TYPE R -->
-                        <col style="width:120px"><!-- 20: รายการ R -->
+                        <col style="width:26px"><!-- 19: TYPE R -->
+                        <col style="width:100px"><!-- 20: รายการ R -->
                     </colgroup>
                     <thead>
                         <tr>
@@ -486,7 +484,7 @@
         // Each circuit connects to the busbar matching its phase:
         //   ((slot-1)/2)%3 => 0=R, 1=S, 2=T
         function generateSLD(numRows) {
-            const rowH = 24;
+            const rowH = 18;
             const totalH = numRows * rowH + 30;
             const cx = 65;
             const busStart = 14;
@@ -654,7 +652,7 @@
                     addCell(tr, c.va_a, '', color, null, undefined, sn);
                     addCell(tr, c.va_b, '', color, null, undefined, sn);
                     addCell(tr, c.va_c, '', color, null, undefined, sn);
-                    addCell(tr, c.circuit_no, '', color, null, undefined, sn);
+                    addCell(tr, c.circuit_no, '', color, c.entity_id, undefined, sn);
                 } else {
                     const rs = isFirstOfSpan ? c.span_size : undefined;
                     addCell(tr, c.name, 'la', color, c.entity_id, rs, sn);
@@ -666,18 +664,18 @@
                     addCell(tr, c.va_a, '', color, null, undefined, sn);
                     addCell(tr, c.va_b, '', color, null, undefined, sn);
                     addCell(tr, c.va_c, '', color, null, undefined, sn);
-                    addCell(tr, c.circuit_no, '', color, null, undefined, sn);
+                    addCell(tr, c.circuit_no, '', color, c.entity_id, undefined, sn);
                 }
             } else {
                 // Right side (mirrored column order)
                 if (isContOfSpan) {
-                    addCell(tr, c.circuit_no, '', color, null, undefined, sn);
+                    addCell(tr, c.circuit_no, '', color, c.entity_id, undefined, sn);
                     addCell(tr, c.va_a, '', color, null, undefined, sn);
                     addCell(tr, c.va_b, '', color, null, undefined, sn);
                     addCell(tr, c.va_c, '', color, null, undefined, sn);
                 } else {
                     const rs = isFirstOfSpan ? c.span_size : undefined;
-                    addCell(tr, c.circuit_no, '', color, null, undefined, sn);
+                    addCell(tr, c.circuit_no, '', color, c.entity_id, undefined, sn);
                     addCell(tr, c.va_a, '', color, null, undefined, sn);
                     addCell(tr, c.va_b, '', color, null, undefined, sn);
                     addCell(tr, c.va_c, '', color, null, undefined, sn);

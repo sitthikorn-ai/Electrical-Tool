@@ -73,7 +73,7 @@ module MyExtensions
           if wire_sqmm
             wire_size_str = phases == 1 ?
               "L+N : 2-1/Cx#{wire_sqmm}\nG : 1-1/Cx#{wire_sqmm}" :
-              "3-1/Cx#{wire_sqmm}\nG : 1-1/Cx#{wire_sqmm}"
+              "3-1/Cx#{wire_sqmm}, G : 1-1/Cx#{wire_sqmm}"
           else
             wire_size_str = '-'
           end
@@ -461,24 +461,28 @@ module MyExtensions
             model = Sketchup.active_model
             model.start_operation('Update Circuit Names', true)
 
-            # Pre-compute the first (lowest) slot for each span_group
-            span_first_slot = {}
+            # Pre-compute all slots for each span_group (sorted ascending)
+            span_slots = {}
             @last_data.each do |d|
               sg = d['span_group']
               next unless sg
-              slot = d['circuit_no'].to_i
-              span_first_slot[sg] = slot if !span_first_slot[sg] || slot < span_first_slot[sg]
+              span_slots[sg] ||= []
+              span_slots[sg] << d['circuit_no'].to_i
             end
+            span_slots.each_value { |v| v.sort!.uniq! }
 
             updated_entities = {}
             @last_data.each do |d|
-              # For span groups, use the first slot; for single-phase, use own slot
               sg = d['span_group']
-              slot = sg ? span_first_slot[sg] : d['circuit_no']
+              if sg && span_slots[sg] && span_slots[sg].size > 1
+                lp_prefix = "LP-#{span_slots[sg].join('-')}"
+              else
+                lp_prefix = "LP-#{d['circuit_no']}"
+              end
 
               old_name = d['name'].to_s
-              desc = old_name.sub(/\ALP-\d+\s*/i, '').strip
-              new_name = desc.empty? ? "LP-#{slot}" : "LP-#{slot} #{desc}"
+              desc = old_name.sub(/\ALP-[\d\-]+\s*/i, '').strip
+              new_name = desc.empty? ? lp_prefix : "#{lp_prefix} #{desc}"
               d['name'] = new_name
 
               # Only update entity once per entity_id (skip duplicates from 3-phase)
