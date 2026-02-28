@@ -3067,6 +3067,30 @@ module MyExtensions
           end
         end
 
+        # --- Callback: Open User Manual in a separate HtmlDialog ---
+        dialog.add_action_callback("openUserManual") do |_ctx|
+          begin
+            manual_path = File.join(EXTENSION_ROOT, 'html', 'user_manual.html')
+            if File.exist?(manual_path)
+              manual_dlg = UI::HtmlDialog.new({
+                dialog_title: "User Manual — SKH Electrical Tool",
+                preferences_key: "SKH_UserManual",
+                scrollable: true,
+                resizable: true,
+                width: 620,
+                height: 750,
+                style: UI::HtmlDialog::STYLE_DIALOG
+              })
+              manual_dlg.set_file(manual_path)
+              manual_dlg.show
+            else
+              UI.messagebox("User Manual file not found:\n#{manual_path}")
+            end
+          rescue => e
+            UI.messagebox("Error opening manual: #{e.message}")
+          end
+        end
+
         # --- Callback: Resize Dialog (Auto-Fit height only, width fixed) ---
         dialog.add_action_callback("resizeDialog") do |_ctx, height|
           begin

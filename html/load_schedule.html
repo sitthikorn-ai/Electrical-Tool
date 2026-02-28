@@ -270,6 +270,100 @@
         .circuit-table tbody td {
             position: relative;
         }
+
+        /* ===== Manual Modal ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.open {
+            display: flex;
+        }
+        .modal-box {
+            background: #fff;
+            border-radius: 6px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+            width: 620px;
+            max-width: 92vw;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 14px;
+            background: linear-gradient(135deg, #0066d6, #004a9e);
+            color: #fff;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 0 4px;
+            line-height: 1;
+        }
+        .modal-close:hover {
+            opacity: 0.7;
+        }
+        .modal-body {
+            padding: 12px 16px;
+            overflow-y: auto;
+            font-size: 11px;
+            line-height: 1.7;
+            color: #222;
+        }
+        .modal-body h3 {
+            font-size: 12px;
+            color: #0066d6;
+            margin: 10px 0 4px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 2px;
+        }
+        .modal-body h3:first-child {
+            margin-top: 0;
+        }
+        .modal-body table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 4px 0 8px;
+            font-size: 10px;
+        }
+        .modal-body table th,
+        .modal-body table td {
+            border: 1px solid #ccc;
+            padding: 3px 6px;
+            text-align: left;
+            vertical-align: top;
+        }
+        .modal-body table th {
+            background: #f0f4ff;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        .modal-body .kbd {
+            display: inline-block;
+            background: #eee;
+            border: 1px solid #bbb;
+            border-radius: 3px;
+            padding: 0 4px;
+            font-family: monospace;
+            font-size: 10px;
+        }
+        @media print {
+            .modal-overlay { display: none !important; }
+        }
     </style>
 </head>
 
@@ -284,6 +378,7 @@
         <button id="btnSwap" onclick="toggleSwapMode()" title="เลือก 2 วงจรเพื่อสลับตำแหน่ง">🔄 Manual Swap</button>
         <button onclick="doUpdateNames()" title="อัพเดทชื่อ LP-N ให้ตรงกับ Circuit No. และอัพเดทชื่อ Group ใน Model">📝 Update LP-N to SU</button>
         <button id="btnSave" onclick="doSaveArrangement()" title="บันทึกการจัดเรียงวงจรลงใน Model">💾 Save Edited Load Data</button>
+        <button onclick="openManual()" title="คู่มือการใช้งาน Load Schedule">📖 Manual</button>
         <span id="swapStatus" style="font-size:10px; color:#666; align-self:center;"></span>
     </div>
 
@@ -771,7 +866,7 @@
                 swapMode = false;
                 swapSelections = [];
                 btn.classList.remove('active');
-                btn.textContent = '🔄 Manual Swap';
+                btn.textContent = String.fromCodePoint(0x1F504) + ' Manual Swap';
                 status.textContent = '';
                 disableSwapClicks();
             }
@@ -781,13 +876,13 @@
             const btn = document.getElementById('btnSwap');
             const status = document.getElementById('swapStatus');
             const count = swapSelections.length;
-            btn.textContent = '🔄 Manual Swap (เลือก ' + count + '/2)';
+            btn.textContent = String.fromCodePoint(0x1F504) + ' Manual Swap (\u0e40\u0e25\u0e37\u0e2d\u0e01 ' + count + '/2)';
             if (count === 0) {
                 status.textContent = 'คลิกเลือกรายการที่ 1...';
             } else if (count === 1) {
                 status.textContent = 'เลือกวงจร ' + swapSelections[0] + ' แล้ว → คลิกเลือกรายการที่ 2...';
             } else {
-                status.textContent = 'เลือกครบ 2 รายการ (วงจร ' + swapSelections[0] + ' ↔ ' + swapSelections[1] + ') → กด Manual Swap อีกครั้งเพื่อสลับ';
+                status.textContent = 'เลือกครบ 2 รายการ (วงจร ' + swapSelections[0] + ' ' + swapSelections[1] + ') → กด Manual Swap อีกครั้งเพื่อสลับ';
             }
         }
 
@@ -878,7 +973,7 @@
             var btn = document.getElementById('btnSave');
             if (btn) {
                 var orig = btn.textContent;
-                btn.textContent = '\u2705 \u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e41\u0e25\u0e49\u0e27!';
+                btn.textContent = String.fromCodePoint(0x2705) + ' บันทึกแล้ว!';
                 btn.style.background = '#4CAF50';
                 btn.style.color = '#fff';
                 btn.style.borderColor = '#388E3C';
@@ -1008,7 +1103,7 @@
             const conduit = selectMainConduit(feeder.size);
 
             document.getElementById('designCurrent').value =
-                designCurrent.toFixed(2) + ' A. (\u00d71.25 = ' + minAT.toFixed(2) + ' A.)';
+                designCurrent.toFixed(2) + ' A. (×1.25 = ' + minAT.toFixed(2) + ' A.)';
             document.getElementById('mainBreakerCalc').value =
                 pole + 'P ' + breakerAT + ' AT. ' + breakerAF + ' AF.';
             document.getElementById('mainBreakerSpec').value =
@@ -1024,9 +1119,9 @@
             document.getElementById('feederConduit').value = conduit;
 
             if (phase === 1) {
-                document.getElementById('systemType').value = '1 \u00D8 2 WIRE WITH GROUND 220 V.ac. 50 Hz';
+                document.getElementById('systemType').value = '1 Ø 2 WIRE WITH GROUND 220 V.ac. 50 Hz';
             } else {
-                document.getElementById('systemType').value = '3 \u00D8 4 WIRE WITH GROUND 380/220 V.ac. 50 Hz';
+                document.getElementById('systemType').value = '3 Ø 4 WIRE WITH GROUND 380/220 V.ac. 50 Hz';
             }
         }
 
@@ -1050,7 +1145,7 @@
 
         function exportToCSV() {
             if (sketchup) sketchup.exportCSV();
-            else alert('Export CSV (\u0e17\u0e14\u0e2a\u0e2d\u0e1a - \u0e44\u0e21\u0e48\u0e44\u0e14\u0e49\u0e40\u0e0a\u0e37\u0e48\u0e2d\u0e21\u0e15\u0e48\u0e2d SketchUp)');
+            else alert('Export CSV (ทดสอบ - ไม่ได้เชื่อมต่อ SketchUp)');
         }
 
         const COL_COUNT = 21;
@@ -1301,6 +1396,14 @@
             initHeaderResizers();
         });
 
+        // ===== Manual Modal =====
+        function openManual() {
+            document.getElementById('manualModal').classList.add('open');
+        }
+        function closeManual() {
+            document.getElementById('manualModal').classList.remove('open');
+        }
+
         // Periodically save dialog position so Ruby always has the latest
         var _chromeHeight = 0;
         setTimeout(function() {
@@ -1313,6 +1416,86 @@
                 sketchup.savePosition(x, y);
             }
         }, 500);
+    </script>
+
+    <!-- ===== Manual Modal ===== -->
+    <div class="modal-overlay" id="manualModal" onclick="if(event.target===this)closeManual()">
+        <div class="modal-box">
+            <div class="modal-header">
+                <span>&#x1F4D6; &#xe04;&#xe39;&#xe48;&#xe21;&#xe37;&#xe2d;&#xe01;&#xe32;&#xe23;&#xe43;&#xe0a;&#xe49;&#xe07;&#xe32;&#xe19; &#x2014; Load Schedule</span>
+                <button class="modal-close" onclick="closeManual()">&times;</button>
+            </div>
+            <div class="modal-body" id="manualBody"></div>
+        </div>
+    </div>
+
+    <script>
+    // Populate manual content via JS to avoid emoji/encoding issues in HTML
+    document.getElementById('manualBody').innerHTML = [
+        '<h3>1. \u0e1b\u0e38\u0e48\u0e21\u0e1a\u0e19 Toolbar</h3>',
+        '<table>',
+        '<tr><th>\u0e1b\u0e38\u0e48\u0e21</th><th>\u0e04\u0e33\u0e2d\u0e18\u0e34\u0e1a\u0e32\u0e22</th></tr>',
+        '<tr><td><b>Import SU Circuit</b></td><td>\u0e14\u0e36\u0e07\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e27\u0e07\u0e08\u0e23\u0e08\u0e32\u0e01 SketchUp Model \u0e21\u0e32\u0e41\u0e2a\u0e14\u0e07\u0e43\u0e19\u0e15\u0e32\u0e23\u0e32\u0e07<br>\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e08\u0e30\u0e16\u0e39\u0e01\u0e08\u0e31\u0e14\u0e40\u0e23\u0e35\u0e22\u0e07\u0e15\u0e32\u0e21 Circuit No. \u0e2d\u0e31\u0e15\u0e42\u0e19\u0e21\u0e31\u0e15\u0e34</td></tr>',
+        '<tr><td><b>Export CSV</b></td><td>\u0e2a\u0e48\u0e07\u0e2d\u0e2d\u0e01\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e15\u0e32\u0e23\u0e32\u0e07\u0e40\u0e1b\u0e47\u0e19\u0e44\u0e1f\u0e25\u0e4c CSV \u0e2a\u0e33\u0e2b\u0e23\u0e31\u0e1a\u0e40\u0e1b\u0e34\u0e14\u0e43\u0e19 Excel</td></tr>',
+        '<tr><td><b>Print PDF</b></td><td>\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e15\u0e32\u0e23\u0e32\u0e07\u0e40\u0e1b\u0e47\u0e19 PDF \u0e1c\u0e48\u0e32\u0e19\u0e2b\u0e19\u0e49\u0e32\u0e15\u0e48\u0e32\u0e07 Print (Toolbar \u0e08\u0e30\u0e16\u0e39\u0e01\u0e0b\u0e48\u0e2d\u0e19\u0e2d\u0e31\u0e15\u0e42\u0e19\u0e21\u0e31\u0e15\u0e34)</td></tr>',
+        '<tr><td><b>' + String.fromCodePoint(0x26A1) + ' Auto Balance</b></td><td>\u0e1b\u0e23\u0e31\u0e1a\u0e2a\u0e21\u0e14\u0e38\u0e25\u0e42\u0e2b\u0e25\u0e14\u0e2d\u0e31\u0e15\u0e42\u0e19\u0e21\u0e31\u0e15\u0e34 \u2014 \u0e08\u0e31\u0e14\u0e40\u0e23\u0e35\u0e22\u0e07\u0e27\u0e07\u0e08\u0e23\u0e43\u0e2b\u0e21\u0e48\u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e43\u0e2b\u0e49 VA \u0e02\u0e2d\u0e07 Phase A, B, C \u0e21\u0e35\u0e04\u0e48\u0e32\u0e43\u0e01\u0e25\u0e49\u0e40\u0e04\u0e35\u0e22\u0e07\u0e01\u0e31\u0e19\u0e21\u0e32\u0e01\u0e17\u0e35\u0e48\u0e2a\u0e38\u0e14</td></tr>',
+        '<tr><td><b>' + String.fromCodePoint(0x1F504) + ' Manual Swap</b></td><td>\u0e2a\u0e25\u0e31\u0e1a\u0e15\u0e33\u0e41\u0e2b\u0e19\u0e48\u0e07\u0e27\u0e07\u0e08\u0e23\u0e14\u0e49\u0e27\u0e22\u0e15\u0e19\u0e40\u0e2d\u0e07:<br>1. \u0e01\u0e14\u0e1b\u0e38\u0e48\u0e21\u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e40\u0e02\u0e49\u0e32\u0e2a\u0e39\u0e48\u0e42\u0e2b\u0e21\u0e14 Swap<br>2. \u0e04\u0e25\u0e34\u0e01\u0e40\u0e25\u0e37\u0e2d\u0e01\u0e27\u0e07\u0e08\u0e23\u0e17\u0e35\u0e48 1<br>3. \u0e04\u0e25\u0e34\u0e01\u0e40\u0e25\u0e37\u0e2d\u0e01\u0e27\u0e07\u0e08\u0e23\u0e17\u0e35\u0e48 2<br>4. \u0e01\u0e14\u0e1b\u0e38\u0e48\u0e21 Manual Swap \u0e2d\u0e35\u0e01\u0e04\u0e23\u0e31\u0e49\u0e07\u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e22\u0e37\u0e19\u0e22\u0e31\u0e19</td></tr>',
+        '<tr><td><b>' + String.fromCodePoint(0x1F4DD) + ' Update LP-N to SU</b></td><td>\u0e2d\u0e31\u0e1e\u0e40\u0e14\u0e17\u0e0a\u0e37\u0e48\u0e2d LP-N \u0e43\u0e2b\u0e49\u0e15\u0e23\u0e07\u0e01\u0e31\u0e1a Circuit No. \u0e41\u0e25\u0e30\u0e2d\u0e31\u0e1e\u0e40\u0e14\u0e17\u0e0a\u0e37\u0e48\u0e2d Group \u0e01\u0e25\u0e31\u0e1a\u0e44\u0e1b\u0e22\u0e31\u0e07 SketchUp Model</td></tr>',
+        '<tr><td><b>' + String.fromCodePoint(0x1F4BE) + ' Save Edited Load Data</b></td><td>\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e01\u0e32\u0e23\u0e08\u0e31\u0e14\u0e40\u0e23\u0e35\u0e22\u0e07\u0e27\u0e07\u0e08\u0e23\u0e17\u0e35\u0e48\u0e41\u0e01\u0e49\u0e44\u0e02\u0e41\u0e25\u0e49\u0e27\u0e01\u0e25\u0e31\u0e1a\u0e25\u0e07\u0e43\u0e19 SketchUp Model<br>' + String.fromCodePoint(0x26A0) + '\uFE0F \u0e15\u0e49\u0e2d\u0e07\u0e01\u0e14\u0e1b\u0e38\u0e48\u0e21\u0e19\u0e35\u0e49\u0e17\u0e38\u0e01\u0e04\u0e23\u0e31\u0e49\u0e07\u0e2b\u0e25\u0e31\u0e07\u0e41\u0e01\u0e49\u0e44\u0e02</td></tr>',
+        '</table>',
+
+        '<h3>2. \u0e2a\u0e48\u0e27\u0e19\u0e2b\u0e31\u0e27\u0e15\u0e32\u0e23\u0e32\u0e07 (Header)</h3>',
+        '<table>',
+        '<tr><th>\u0e1f\u0e34\u0e25\u0e14\u0e4c</th><th>\u0e04\u0e33\u0e2d\u0e18\u0e34\u0e1a\u0e32\u0e22</th></tr>',
+        '<tr><td><b>\u0e40\u0e25\u0e02\u0e17\u0e35\u0e48\u0e41\u0e1c\u0e07\u0e22\u0e48\u0e2d\u0e22</b></td><td>\u0e0a\u0e37\u0e48\u0e2d Load Panel \u0e40\u0e0a\u0e48\u0e19 LC1, LP-A1 (\u0e41\u0e01\u0e49\u0e44\u0e02\u0e44\u0e14\u0e49)</td></tr>',
+        '<tr><td><b>\u0e40\u0e1a\u0e23\u0e01\u0e40\u0e01\u0e2d\u0e23\u0e4c\u0e27\u0e07\u0e08\u0e23\u0e22\u0e48\u0e2d\u0e22</b></td><td>\u0e2a\u0e40\u0e1b\u0e04 IC \u0e02\u0e2d\u0e07 Branch Circuit Breaker (\u0e41\u0e01\u0e49\u0e44\u0e02\u0e44\u0e14\u0e49)</td></tr>',
+        '<tr><td><b>\u0e2a\u0e16\u0e32\u0e19\u0e17\u0e35\u0e48\u0e15\u0e34\u0e14\u0e15\u0e31\u0e49\u0e07</b></td><td>\u0e15\u0e33\u0e41\u0e2b\u0e19\u0e48\u0e07\u0e15\u0e34\u0e14\u0e15\u0e31\u0e49\u0e07 Load Panel (\u0e41\u0e01\u0e49\u0e44\u0e02\u0e44\u0e14\u0e49)</td></tr>',
+        '<tr><td><b>\u0e23\u0e30\u0e1a\u0e1a\u0e44\u0e1f\u0e1f\u0e49\u0e32 (1\u00d8/3\u00d8)</b></td><td>\u0e40\u0e25\u0e37\u0e2d\u0e01\u0e23\u0e30\u0e1a\u0e1a\u0e44\u0e1f \u2014 \u0e08\u0e30\u0e04\u0e33\u0e19\u0e27\u0e13 Main Breaker \u0e43\u0e2b\u0e21\u0e48\u0e2d\u0e31\u0e15\u0e42\u0e19\u0e21\u0e31\u0e15\u0e34</td></tr>',
+        '</table>',
+
+        '<h3>3. \u0e15\u0e32\u0e23\u0e32\u0e07\u0e27\u0e07\u0e08\u0e23 (Circuit Table)</h3>',
+        '<table>',
+        '<tr><th>\u0e04\u0e2d\u0e25\u0e31\u0e21\u0e19\u0e4c</th><th>\u0e04\u0e33\u0e2d\u0e18\u0e34\u0e1a\u0e32\u0e22</th></tr>',
+        '<tr><td><b>\u0e23\u0e32\u0e22\u0e01\u0e32\u0e23</b></td><td>\u0e0a\u0e37\u0e48\u0e2d\u0e27\u0e07\u0e08\u0e23 \u0e40\u0e0a\u0e48\u0e19 LIGHTING, RECEPTACLE \u2014 \u0e04\u0e25\u0e34\u0e01\u0e17\u0e35\u0e48\u0e0a\u0e37\u0e48\u0e2d (\u0e02\u0e35\u0e14\u0e40\u0e2a\u0e49\u0e19\u0e43\u0e15\u0e49) \u0e40\u0e1e\u0e37\u0e48\u0e2d Select/Deselect \u0e43\u0e19 Model</td></tr>',
+        '<tr><td><b>\u0e2a\u0e32\u0e22\u0e44\u0e1f (SIZE / TYPE)</b></td><td>\u0e02\u0e19\u0e32\u0e14\u0e41\u0e25\u0e30\u0e0a\u0e19\u0e34\u0e14\u0e2a\u0e32\u0e22\u0e44\u0e1f \u0e40\u0e0a\u0e48\u0e19 L+N : 2-1/Cx2.5 THW</td></tr>',
+        '<tr><td><b>\u0e17\u0e48\u0e2d (\u00f8 IN)</b></td><td>\u0e02\u0e19\u0e32\u0e14\u0e17\u0e48\u0e2d\u0e23\u0e49\u0e2d\u0e22\u0e2a\u0e32\u0e22 \u0e40\u0e0a\u0e48\u0e19 1/2" PVC</td></tr>',
+        '<tr><td><b>\u0e40\u0e1a\u0e23\u0e01\u0e40\u0e01\u0e2d\u0e23\u0e4c (POLE / AT)</b></td><td>\u0e02\u0e19\u0e32\u0e14 Pole \u0e41\u0e25\u0e30 Ampere Trip \u0e02\u0e2d\u0e07 Circuit Breaker</td></tr>',
+        '<tr><td><b>VA (R / S / T)</b></td><td>\u0e04\u0e48\u0e32\u0e42\u0e2b\u0e25\u0e14\u0e41\u0e22\u0e01 Phase \u2014 R=Phase A, S=Phase B, T=Phase C</td></tr>',
+        '<tr><td><b>\u0e40\u0e25\u0e02\u0e17\u0e35\u0e48</b></td><td>\u0e2b\u0e21\u0e32\u0e22\u0e40\u0e25\u0e02\u0e27\u0e07\u0e08\u0e23 (Circuit No.) \u2014 \u0e40\u0e25\u0e02\u0e04\u0e35\u0e48\u0e14\u0e49\u0e32\u0e19\u0e0b\u0e49\u0e32\u0e22, \u0e40\u0e25\u0e02\u0e04\u0e39\u0e48\u0e14\u0e49\u0e32\u0e19\u0e02\u0e27\u0e32</td></tr>',
+        '<tr><td><b>\u0e44\u0e14\u0e2d\u0e30\u0e41\u0e01\u0e23\u0e21 (SLD)</b></td><td>\u0e41\u0e1c\u0e19\u0e20\u0e32\u0e1e Single Line Diagram \u0e41\u0e2a\u0e14\u0e07\u0e01\u0e32\u0e23\u0e40\u0e0a\u0e37\u0e48\u0e2d\u0e21\u0e15\u0e48\u0e2d Phase</td></tr>',
+        '</table>',
+
+        '<h3>4. \u0e01\u0e32\u0e23\u0e04\u0e33\u0e19\u0e27\u0e13 Main Breaker (\u0e2d\u0e31\u0e15\u0e42\u0e19\u0e21\u0e31\u0e15\u0e34)</h3>',
+        '<p>\u0e23\u0e30\u0e1a\u0e1a\u0e08\u0e30\u0e04\u0e33\u0e19\u0e27\u0e13\u0e15\u0e32\u0e21\u0e21\u0e32\u0e15\u0e23\u0e10\u0e32\u0e19 \u0e27\u0e2a\u0e17. (EIT) \u0e42\u0e14\u0e22\u0e2d\u0e31\u0e15\u0e42\u0e19\u0e21\u0e31\u0e15\u0e34:</p>',
+        '<table>',
+        '<tr><th>\u0e23\u0e32\u0e22\u0e01\u0e32\u0e23</th><th>\u0e27\u0e34\u0e18\u0e35\u0e04\u0e33\u0e19\u0e27\u0e13</th></tr>',
+        '<tr><td><b>Design Current</b></td><td>1\u00d8: VA<sub>max</sub> \u00f7 220V &nbsp;|&nbsp; 3\u00d8: VA<sub>total</sub> \u00f7 (\u221a3 \u00d7 380V)</td></tr>',
+        '<tr><td><b>Main Breaker (AT)</b></td><td>Design Current \u00d7 1.25 \u2192 \u0e40\u0e25\u0e37\u0e2d\u0e01 AT \u0e17\u0e35\u0e48\u0e43\u0e01\u0e25\u0e49\u0e40\u0e04\u0e35\u0e22\u0e07\u0e02\u0e36\u0e49\u0e19\u0e44\u0e1b</td></tr>',
+        '<tr><td><b>Feeder Wire</b></td><td>\u0e40\u0e25\u0e37\u0e2d\u0e01\u0e2a\u0e32\u0e22\u0e15\u0e32\u0e21 Ampacity \u2265 Breaker AT</td></tr>',
+        '<tr><td><b>Ground Wire</b></td><td>\u0e40\u0e25\u0e37\u0e2d\u0e01\u0e15\u0e32\u0e21\u0e15\u0e32\u0e23\u0e32\u0e07 \u0e27\u0e2a\u0e17. \u0e15\u0e32\u0e21 AT \u0e02\u0e2d\u0e07 Main Breaker</td></tr>',
+        '<tr><td><b>\u0e17\u0e48\u0e2d\u0e23\u0e49\u0e2d\u0e22\u0e2a\u0e32\u0e22</b></td><td>\u0e40\u0e25\u0e37\u0e2d\u0e01\u0e02\u0e19\u0e32\u0e14\u0e17\u0e48\u0e2d\u0e15\u0e32\u0e21\u0e02\u0e19\u0e32\u0e14\u0e2a\u0e32\u0e22\u0e44\u0e1f</td></tr>',
+        '</table>',
+
+        '<h3>5. \u0e40\u0e17\u0e04\u0e19\u0e34\u0e04\u0e01\u0e32\u0e23\u0e43\u0e0a\u0e49\u0e07\u0e32\u0e19</h3>',
+        '<table>',
+        '<tr><th>\u0e01\u0e32\u0e23\u0e01\u0e23\u0e30\u0e17\u0e33</th><th>\u0e27\u0e34\u0e18\u0e35\u0e17\u0e33</th></tr>',
+        '<tr><td><b>\u0e40\u0e25\u0e37\u0e2d\u0e01 Circuit \u0e43\u0e19 SU</b></td><td>\u0e04\u0e25\u0e34\u0e01\u0e17\u0e35\u0e48\u0e0a\u0e37\u0e48\u0e2d\u0e27\u0e07\u0e08\u0e23 (\u0e15\u0e31\u0e27\u0e2b\u0e19\u0e32+\u0e02\u0e35\u0e14\u0e40\u0e2a\u0e49\u0e19\u0e43\u0e15\u0e49) \u0e40\u0e1e\u0e37\u0e48\u0e2d Select/Deselect \u0e43\u0e19 Model</td></tr>',
+        '<tr><td><b>\u0e1b\u0e23\u0e31\u0e1a\u0e04\u0e27\u0e32\u0e21\u0e01\u0e27\u0e49\u0e32\u0e07\u0e04\u0e2d\u0e25\u0e31\u0e21\u0e19\u0e4c</b></td><td>\u0e25\u0e32\u0e01\u0e02\u0e2d\u0e1a\u0e02\u0e27\u0e32\u0e02\u0e2d\u0e07\u0e2b\u0e31\u0e27\u0e04\u0e2d\u0e25\u0e31\u0e21\u0e19\u0e4c \u0e2a\u0e32\u0e22\u0e44\u0e1f (SIZE) \u2014 \u0e14\u0e31\u0e1a\u0e40\u0e1a\u0e34\u0e25\u0e04\u0e25\u0e34\u0e01\u0e40\u0e1e\u0e37\u0e48\u0e2d Auto-fit</td></tr>',
+        '<tr><td><b>\u0e1b\u0e23\u0e31\u0e1a\u0e04\u0e27\u0e32\u0e21\u0e2a\u0e39\u0e07\u0e41\u0e16\u0e27</b></td><td>\u0e25\u0e32\u0e01\u0e02\u0e2d\u0e1a\u0e25\u0e48\u0e32\u0e07\u0e02\u0e2d\u0e07\u0e41\u0e16\u0e27\u0e43\u0e19\u0e15\u0e32\u0e23\u0e32\u0e07 \u2014 \u0e14\u0e31\u0e1a\u0e40\u0e1a\u0e34\u0e25\u0e04\u0e25\u0e34\u0e01\u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e23\u0e35\u0e40\u0e0b\u0e47\u0e15</td></tr>',
+        '<tr><td><b>\u0e41\u0e01\u0e49\u0e44\u0e02\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25 Header</b></td><td>\u0e04\u0e25\u0e34\u0e01\u0e17\u0e35\u0e48\u0e0a\u0e48\u0e2d\u0e07 Input \u0e41\u0e25\u0e49\u0e27\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e43\u0e2b\u0e21\u0e48\u0e44\u0e14\u0e49\u0e40\u0e25\u0e22</td></tr>',
+        '<tr><td><b>\u0e27\u0e07\u0e08\u0e23 3 Phase</b></td><td>\u0e27\u0e07\u0e08\u0e23\u0e17\u0e35\u0e48\u0e21\u0e35 Pole = 3 \u0e08\u0e30\u0e41\u0e2a\u0e14\u0e07\u0e1c\u0e25\u0e23\u0e27\u0e21\u0e01\u0e31\u0e19 3 \u0e41\u0e16\u0e27 (span group)</td></tr>',
+        '</table>',
+
+        '<h3>6. \u0e02\u0e31\u0e49\u0e19\u0e15\u0e2d\u0e19\u0e01\u0e32\u0e23\u0e17\u0e33\u0e07\u0e32\u0e19\u0e41\u0e19\u0e30\u0e19\u0e33</h3>',
+        '<p>',
+        '<b>1.</b> \u0e01\u0e14 <b>Import SU Circuit</b> \u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e14\u0e36\u0e07\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25<br>',
+        '<b>2.</b> \u0e15\u0e23\u0e27\u0e08\u0e2a\u0e2d\u0e1a\u0e41\u0e25\u0e30\u0e41\u0e01\u0e49\u0e44\u0e02\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25 Header (\u0e0a\u0e37\u0e48\u0e2d Panel, \u0e2a\u0e16\u0e32\u0e19\u0e17\u0e35\u0e48, \u0e23\u0e30\u0e1a\u0e1a\u0e44\u0e1f)<br>',
+        '<b>3.</b> \u0e43\u0e0a\u0e49 <b>Auto Balance</b> \u0e2b\u0e23\u0e37\u0e2d <b>Manual Swap</b> \u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e08\u0e31\u0e14\u0e40\u0e23\u0e35\u0e22\u0e07\u0e27\u0e07\u0e08\u0e23<br>',
+        '<b>4.</b> \u0e01\u0e14 <b>Update LP-N to SU</b> \u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e2d\u0e31\u0e1e\u0e40\u0e14\u0e17\u0e0a\u0e37\u0e48\u0e2d\u0e01\u0e25\u0e31\u0e1a\u0e44\u0e1b\u0e22\u0e31\u0e07 Model<br>',
+        '<b>5.</b> \u0e01\u0e14 <b>' + String.fromCodePoint(0x1F4BE) + ' Save Edited Load Data</b> \u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25<br>',
+        '<b>6.</b> \u0e01\u0e14 <b>Export CSV</b> \u0e2b\u0e23\u0e37\u0e2d <b>Print PDF</b> \u0e15\u0e32\u0e21\u0e15\u0e49\u0e2d\u0e07\u0e01\u0e32\u0e23',
+        '</p>'
+    ].join('\n');
     </script>
 
 </body>

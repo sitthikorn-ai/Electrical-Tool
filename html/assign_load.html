@@ -225,6 +225,53 @@
         .btn-secondary:hover {
             background-color: #dcdcdc;
         }
+
+        /* Custom Device Name Manager */
+        .custom-name-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+        }
+
+        .custom-name-row input[type="text"] {
+            flex: 1;
+            padding: 3px 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+
+        .btn-add {
+            background-color: #27ae60;
+            color: white;
+            padding: 3px 8px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .btn-add:hover {
+            background-color: #219150;
+        }
+
+        .btn-del {
+            background-color: #e74c3c;
+            color: white;
+            padding: 3px 8px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .btn-del:hover {
+            background-color: #c0392b;
+        }
     </style>
 </head>
 
@@ -507,6 +554,19 @@
                 <button class="btn btn-primary" onclick="applyDevice()">Apply Device</button>
             </div>
         </div>
+        <!-- Row 3: Custom Device Name Manager -->
+        <div class="footer-row">
+            <div class="manual-input" style="flex:1;">
+                <div class="input-group" style="flex:1;">
+                    <label>Manage Device Name</label>
+                    <div class="custom-name-row">
+                        <input type="text" id="inputCustomDeviceName" placeholder="New device name..." style="width:auto;" />
+                        <button class="btn-add" onclick="addCustomDeviceName()">+ Add</button>
+                        <button class="btn-del" onclick="removeCustomDeviceName()">- Del</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -573,6 +633,75 @@
         function closeDialog() {
             sketchup.closeDialog();
         }
+
+        // =============================================
+        // CUSTOM DEVICE NAME MANAGER (localStorage)
+        // =============================================
+        const CUSTOM_DEVICE_STORAGE_KEY = 'skh_custom_device_names';
+
+        function loadCustomDeviceNames() {
+            const stored = localStorage.getItem(CUSTOM_DEVICE_STORAGE_KEY);
+            const names = stored ? JSON.parse(stored) : [];
+            const select = document.getElementById('inputDevice');
+            // Remove existing custom entries
+            select.querySelectorAll('option[data-custom]').forEach(function(opt) { opt.remove(); });
+            // Add custom entries after built-in options
+            names.forEach(function(name) {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                opt.setAttribute('data-custom', 'true');
+                select.appendChild(opt);
+            });
+        }
+
+        function addCustomDeviceName() {
+            const input = document.getElementById('inputCustomDeviceName');
+            const name = input.value.trim();
+            if (!name) {
+                alert('Please enter a device name.');
+                return;
+            }
+            const stored = localStorage.getItem(CUSTOM_DEVICE_STORAGE_KEY);
+            const names = stored ? JSON.parse(stored) : [];
+            // Check duplicate
+            if (names.indexOf(name) >= 0) {
+                alert('Device name "' + name + '" already exists.');
+                return;
+            }
+            names.push(name);
+            localStorage.setItem(CUSTOM_DEVICE_STORAGE_KEY, JSON.stringify(names));
+            loadCustomDeviceNames();
+            // Auto-select the newly added item
+            document.getElementById('inputDevice').value = name;
+            input.value = '';
+        }
+
+        function removeCustomDeviceName() {
+            const select = document.getElementById('inputDevice');
+            const selectedOption = select.options[select.selectedIndex];
+            if (!selectedOption || !selectedOption.hasAttribute('data-custom')) {
+                alert('Please select a custom device name to remove.\n(Built-in items cannot be removed.)');
+                return;
+            }
+            const name = selectedOption.value;
+            if (!confirm('Remove custom device "' + name + '"?')) return;
+            const stored = localStorage.getItem(CUSTOM_DEVICE_STORAGE_KEY);
+            let names = stored ? JSON.parse(stored) : [];
+            names = names.filter(function(n) { return n !== name; });
+            localStorage.setItem(CUSTOM_DEVICE_STORAGE_KEY, JSON.stringify(names));
+            loadCustomDeviceNames();
+        }
+
+        // Listen for storage changes from other windows (e.g. input_devices.html)
+        window.addEventListener('storage', function(e) {
+            if (e.key === CUSTOM_DEVICE_STORAGE_KEY) {
+                loadCustomDeviceNames();
+            }
+        });
+
+        // Load custom names on page init
+        loadCustomDeviceNames();
 
         // Periodically save dialog position so Ruby always has the latest
         // Compensate for title bar: screenY reports content top, set_position expects frame top

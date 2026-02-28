@@ -309,6 +309,29 @@
             animation: none;
         }
 
+        .btn-user-manual {
+            margin-left: auto;
+            padding: 2px 10px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #fff;
+            background: linear-gradient(135deg, #6366f1, #818cf8);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn-user-manual:hover {
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            transform: translateY(-1px);
+        }
+
+        .btn-user-manual:active {
+            transform: translateY(0);
+        }
+
         /* ===== Divider ===== */
         .divider {
             height: 1px;
@@ -897,6 +920,7 @@
     <div class="status-bar" id="status-bar">
         <span class="status-dot"></span>
         <span id="status-text">Ready — Please select a device or wire</span>
+        <button class="btn-user-manual" onclick="openUserManual()">📖 User Manual</button>
     </div>
 
     <script>
@@ -1498,6 +1522,41 @@
             bar.className = 'status-bar' + (type ? ' ' + type : '');
             text.textContent = message;
         }
+
+        function openUserManual() {
+            sketchup.openUserManual();
+        }
+
+        // =============================================
+        // CUSTOM DEVICE NAMES (synced from assign_load via localStorage)
+        // =============================================
+        var CUSTOM_DEVICE_STORAGE_KEY = 'skh_custom_device_names';
+
+        function loadCustomLevelParameters() {
+            var stored = localStorage.getItem(CUSTOM_DEVICE_STORAGE_KEY);
+            var names = stored ? JSON.parse(stored) : [];
+            var select = document.getElementById('level-parameter');
+            // Remove existing custom entries
+            select.querySelectorAll('option[data-custom]').forEach(function(opt) { opt.remove(); });
+            // Add custom entries after built-in options
+            names.forEach(function(name) {
+                var opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                opt.setAttribute('data-custom', 'true');
+                select.appendChild(opt);
+            });
+        }
+
+        // Listen for storage changes from other windows (e.g. assign_load.html)
+        window.addEventListener('storage', function(e) {
+            if (e.key === CUSTOM_DEVICE_STORAGE_KEY) {
+                loadCustomLevelParameters();
+            }
+        });
+
+        // Load custom names on page init
+        loadCustomLevelParameters();
 
         // =============================================
         // AUTO FIT DIALOG

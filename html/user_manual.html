@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Manual — SKH Electrical Tool</title>
+    <style>
+        :root {
+            --primary: #0078d7;
+            --primary-light: #e8f4fd;
+            --accent: #27ae60;
+            --accent-light: #eafaf1;
+            --orange: #e67e22;
+            --orange-light: #fef5e7;
+            --purple: #8e44ad;
+            --purple-light: #f4ecf7;
+            --danger: #e74c3c;
+            --bg: #ffffff;
+            --surface: #f8f9fa;
+            --text: #2c3e50;
+            --text-muted: #6c757d;
+            --border: #dee2e6;
+            --radius: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 13px;
+            line-height: 1.7;
+            padding: 0;
+        }
+
+        /* ===== Header ===== */
+        .header {
+            background: linear-gradient(135deg, #0078d7, #005fa3);
+            color: #fff;
+            padding: 20px 24px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .header .subtitle {
+            font-size: 12px;
+            opacity: 0.85;
+        }
+
+        /* ===== Navigation ===== */
+        .nav {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 8px 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            position: sticky;
+            top: 68px;
+            z-index: 99;
+        }
+
+        .nav a {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-decoration: none;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .nav a:hover {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        /* ===== Content ===== */
+        .content {
+            padding: 16px 20px 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* ===== Sections ===== */
+        .section {
+            margin-bottom: 28px;
+        }
+
+        .section-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title .icon {
+            font-size: 20px;
+        }
+
+        h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 16px 0 8px;
+        }
+
+        h4 {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin: 12px 0 6px;
+        }
+
+        p {
+            margin-bottom: 8px;
+        }
+
+        /* ===== Info Boxes ===== */
+        .info-box {
+            padding: 10px 14px;
+            border-radius: var(--radius);
+            margin: 10px 0;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .info-box.blue {
+            background: var(--primary-light);
+            border-left: 4px solid var(--primary);
+        }
+
+        .info-box.green {
+            background: var(--accent-light);
+            border-left: 4px solid var(--accent);
+        }
+
+        .info-box.orange {
+            background: var(--orange-light);
+            border-left: 4px solid var(--orange);
+        }
+
+        .info-box.purple {
+            background: var(--purple-light);
+            border-left: 4px solid var(--purple);
+        }
+
+        .info-box .box-title {
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        /* ===== Keyboard Shortcuts Table ===== */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 12px;
+        }
+
+        th {
+            background: var(--surface);
+            padding: 8px 10px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 6px 10px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        tr:hover td {
+            background: rgba(0, 120, 215, 0.03);
+        }
+
+        /* ===== Keyboard Key Style ===== */
+        kbd {
+            display: inline-block;
+            padding: 2px 6px;
+            font-size: 11px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            color: var(--text);
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-shadow: 0 1px 0 #bbb;
+            white-space: nowrap;
+        }
+
+        /* ===== Step List ===== */
+        .steps {
+            counter-reset: step-counter;
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+        }
+
+        .steps li {
+            counter-increment: step-counter;
+            padding: 8px 10px 8px 40px;
+            position: relative;
+            margin-bottom: 6px;
+            background: var(--surface);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        .steps li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 10px;
+            top: 8px;
+            width: 22px;
+            height: 22px;
+            background: var(--primary);
+            color: #fff;
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .steps.green li::before {
+            background: var(--accent);
+        }
+
+        .steps.orange li::before {
+            background: var(--orange);
+        }
+
+        /* ===== Collapsible ===== */
+        details {
+            margin: 8px 0;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        summary {
+            padding: 8px 12px;
+            background: var(--surface);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            user-select: none;
+            transition: background 0.2s;
+        }
+
+        summary:hover {
+            background: #e9ecef;
+        }
+
+        details[open] summary {
+            border-bottom: 1px solid var(--border);
+        }
+
+        details .detail-content {
+            padding: 10px 14px;
+        }
+
+        /* ===== Code ===== */
+        code {
+            background: #f0f0f0;
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 11.5px;
+            color: #d63384;
+        }
+
+        /* ===== Divider ===== */
+        hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 20px 0;
+        }
+
+        /* ===== Back to Top ===== */
+        .back-top {
+            display: inline-block;
+            margin-top: 8px;
+            font-size: 11px;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .back-top:hover {
+            text-decoration: underline;
+        }
+
+        /* ===== Footer ===== */
+        .footer {
+            text-align: center;
+            padding: 16px;
+            font-size: 11px;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border);
+            background: var(--surface);
+        }
+
+        /* ===== Badge ===== */
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .badge.blue { background: var(--primary); }
+        .badge.green { background: var(--accent); }
+        .badge.orange { background: var(--orange); }
+        .badge.purple { background: var(--purple); }
+
+        /* ===== Scroll Margin ===== */
+        [id] {
+            scroll-margin-top: 120px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header" id="top">
+        <h1>📘 SKH Electrical Tool — User Manual</h1>
+        <div class="subtitle">คู่มือการใช้งาน Plugin ระบบไฟฟ้าสำหรับ SketchUp</div>
+    </div>
+
+    <div class="nav">
+        <a href="#overview">ภาพรวม</a>
+        <a href="#devices-panel">วางอุปกรณ์</a>
+        <a href="#place-device">Place Device</a>
+        <a href="#place-on-wall">Place on Wall</a>
+        <a href="#wirings-panel">วาดสายไฟ</a>
+        <a href="#draw-arc">Arc Mode</a>
+        <a href="#draw-line">Line Mode</a>
+        <a href="#custom-device">Custom Device</a>
+        <a href="#custom-wiring">Custom Wiring</a>
+        <a href="#level-param">Level Parameter</a>
+        <a href="#tag-view">Tag View</a>
+        <a href="#assign-load">Assign Load</a>
+        <a href="#create-circuit">Create Circuit</a>
+        <a href="#shortcuts">Shortcuts</a>
+    </div>
+
+    <div class="content">
+
+        <!-- ==================== OVERVIEW ==================== -->
+        <div class="section" id="overview">
+            <div class="section-title"><span class="icon">⚡</span> ภาพรวม (Overview)</div>
+            <p>
+                <strong>SKH Electrical Tool</strong> เป็น Extension สำหรับ SketchUp ที่ช่วยในการออกแบบระบบไฟฟ้า
+                โดยสามารถวางอุปกรณ์ไฟฟ้า (Devices), วาดเส้นสายไฟ (Wirings), กำหนดโหลด (Load),
+                และสร้างวงจร (Circuit) ได้อย่างสะดวกรวดเร็ว
+            </p>
+
+            <div class="info-box blue">
+                <div class="box-title">ความสามารถหลัก</div>
+                <strong>1. Input Devices & Wirings</strong> — วางอุปกรณ์ไฟฟ้าและวาดสายไฟลงบนโมเดล<br>
+                <strong>2. Assign Load</strong> — กำหนดค่าโหลดไฟฟ้า (Watts) ให้กับอุปกรณ์<br>
+                <strong>3. Create Circuit</strong> — รวมอุปกรณ์เป็นวงจร พร้อมคำนวณกระแส/สาย/เบรกเกอร์<br>
+                <strong>4. Load Schedule</strong> — ดูตารางโหลดรวมของทั้งโปรเจกต์
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- ==================== DEVICES PANEL ==================== -->
+        <div class="section" id="devices-panel">
+            <div class="section-title"><span class="icon">📌</span> Devices Panel — การวางอุปกรณ์ไฟฟ้า</div>
+
+            <p>
+                Panel นี้ใช้สำหรับเลือกและวางอุปกรณ์ไฟฟ้า (เช่น ปลั๊ก สวิตช์ โคมไฟ) ลงบนโมเดล SketchUp
+            </p>
+
+            <h3>ขั้นตอนการใช้งานเบื้องต้น</h3>
+            <ol class="steps">
+                <li>เปิด Panel <strong>"Input Devices & Wirings"</strong> จาก Toolbar หรือ Menu ของ Extension</li>
+                <li>ใช้ <strong>Filter Buttons</strong> (All / Wall / Ceiling) เพื่อกรองประเภทอุปกรณ์</li>
+                <li>พิมพ์ค้นหาชื่ออุปกรณ์ในช่อง <strong>"Search or Select Device"</strong> หรือเลือกจาก Dropdown</li>
+                <li>ดูตัวอย่างอุปกรณ์ใน <strong>Preview</strong> (เลือกมุมมอง ISO หรือ TOP)</li>
+                <li>กดปุ่ม <span class="badge blue">📌 Place Device</span> หรือ <span class="badge orange">🧱 Place Device with Ref_Point</span></li>
+                <li><strong>Click</strong> บนโมเดลเพื่อวางอุปกรณ์ กด <kbd>Esc</kbd> เพื่อยกเลิก</li>
+            </ol>
+
+            <h3>Filter Buttons</h3>
+            <p>
+                กดปุ่มตัวกรองเพื่อแสดงเฉพาะอุปกรณ์ประเภทที่ต้องการ:
+            </p>
+            <table>
+                <tr><th>ปุ่ม</th><th>แสดง</th></tr>
+                <tr><td><strong>All</strong></td><td>อุปกรณ์ทั้งหมด</td></tr>
+                <tr><td><strong>Wall</strong></td><td>อุปกรณ์ติดผนัง เช่น ปลั๊ก, สวิตช์, แอร์</td></tr>
+                <tr><td><strong>Ceiling/Floor</strong></td><td>อุปกรณ์ติดเพดาน/พื้น เช่น โคมไฟ, พัดลม</td></tr>
+            </table>
+
+            <h3>Preview อุปกรณ์</h3>
+            <p>
+                เมื่อเลือกอุปกรณ์แล้ว จะแสดงรูปตัวอย่างในช่อง PREVIEW สามารถสลับมุมมอง:
+            </p>
+            <table>
+                <tr><th>ปุ่ม</th><th>มุมมอง</th></tr>
+                <tr><td><strong>ISO</strong></td><td>มุม Isometric (3 มิติ)</td></tr>
+                <tr><td><strong>TOP</strong></td><td>มุมบน (ผังพื้น)</td></tr>
+                <tr><td><strong>UPDATE</strong></td><td>บันทึก Component กลับไปยังโฟลเดอร์ components</td></tr>
+            </table>
+
+            <h3>Offset จาก Component Axis</h3>
+            <p>
+                ใส่ค่า Offset X, Y, Z เพื่อเลื่อนตำแหน่งอุปกรณ์จากจุด Click
+                กดปุ่ม <strong>✕</strong> เพื่อ Reset กลับเป็น 0,0,0
+            </p>
+            <div class="info-box blue">
+                <div class="box-title">💡 Tip</div>
+                ค่า Offset สามารถเปลี่ยนได้แบบ Real-time ขณะวางอุปกรณ์ ทั้งจากช่อง Input ใน Panel และจาก VCB ใน SketchUp (กด <kbd>Ctrl</kbd> เพื่อเข้า Offset Mode)
+            </div>
+
+            <a href="#top" class="back-top">▲ กลับด้านบน</a>
+        </div>
+
+        <hr>
+
+        <!-- ==================== PLACE DEVICE ==================== -->
+        <div class="section" id="place-device">
+            <div class="section-title"><span class="icon">📍</span> Place Device — วางอุปกรณ์อิสระ</div>
+
+            <p>
+                โหมดวางอุปกรณ์แบบอิสระ สามารถ Click วางได้ทุกตำแหน่ง พร้อมระบบ Inference Snapping ของ SketchUp
+            </p>
+
+            <h3>Keyboard Shortcuts ขณะวางอุปกรณ์</h3>
+            <table>
+                <tr><th>ปุ่ม</th><th>การทำงาน</th></tr>
+                <tr><td><kbd>Click</kbd></td><td>วางอุปกรณ์ ณ ตำแหน่งเมาส์</td></tr>
+                <tr><td><kbd>Esc</kbd></td><td>ยกเลิก / ออกจากโหมด</td></tr>
+                <tr><td><kbd>Shift</kbd> + <kbd>→</kbd></td><td>หมุนรอบแกน X +90°</td></tr>
+                <tr><td><kbd>Shift</kbd> + <kbd>←</kbd></td><td>หมุนรอบแกน Y +90°</td></tr>
+                <tr><td><kbd>Shift</kbd> + <kbd>↑</kbd></td><td>หมุนรอบแกน Z +90°</td></tr>
+                <tr><td><kbd>→</kbd></td><td>Lock แกน X (แดง) / ปลดล็อก</td></tr>
+                <tr><td><kbd>←</kbd></td><td>Lock แกน Y (เขียว) / ปลดล็อก</td></tr>
+                <tr><td><kbd>↑</kbd></td><td>Lock แกน Z (น้ำเงิน) / ปลดล็อก</td></tr>
+                <tr><td><kbd>Ctrl</kbd></td><td>เปิด/ปิด Offset Mode — พิมพ์ค่า Offset X,Y,Z ใน VCB</td></tr>
+                <tr><td><kbd>Alt</kbd></td><td>เปิด/ปิด Z-Plane Mode — กำหนดระดับความสูงที่จะวาง</td></tr>
+                <tr><td><kbd>Tab</kbd></td><td>เปิด/ปิด Copy Array Mode</td></tr>
+            </table>
+
+            <details>
+                <summary>🔒 Axis Lock — ล็อกแกนการเลื่อน</summary>
+                <div class="detail-content">
+                    <p>เมื่อกดลูกศรเพื่อ Lock แกน อุปกรณ์จะเลื่อนได้เฉพาะตามแกนนั้น</p>
+                    <ul>
+                        <li><kbd>→</kbd> = แกน X (เส้นแดง)</li>
+                        <li><kbd>←</kbd> = แกน Y (เส้นเขียว)</li>
+                        <li><kbd>↑</kbd> = แกน Z (เส้นน้ำเงิน)</li>
+                    </ul>
+                    <p>พิมพ์ระยะทางใน VCB แล้วกด <kbd>Enter</kbd> เพื่อวางตามระยะที่กำหนด กด <kbd>Esc</kbd> เพื่อปลดล็อก</p>
+                </div>
+            </details>
+
+            <details>
+                <summary>📐 Z-Plane Mode — กำหนดระดับความสูง</summary>
+                <div class="detail-content">
+                    <p>กด <kbd>Alt</kbd> เพื่อเข้า Z-Plane Mode:</p>
+                    <ol class="steps">
+                        <li><strong>Click จุดอ้างอิง</strong> — ระบบจะใช้ค่า Z ของจุดนั้นเป็น Z-Plane</li>
+                        <li>หรือ <strong>พิมพ์ค่าความสูง</strong> ใน VCB เช่น <code>2.8m</code> แล้วกด <kbd>Enter</kbd></li>
+                    </ol>
+                    <p>หลังกำหนดแล้ว อุปกรณ์ทุกตัวจะถูกวางที่ระดับ Z นั้น โดยใช้ Inference จากพื้น Z=0 สำหรับตำแหน่ง XY</p>
+                    <p>กด <kbd>Alt</kbd> อีกครั้งเพื่อปิด Z-Plane</p>
+                </div>
+            </details>
+
+            <details>
+                <summary>📋 Copy Array — วางอุปกรณ์ซ้ำเป็นแถว</summary>
+                <div class="detail-content">
+                    <p>กด <kbd>Tab</kbd> เพื่อเปิด Array Mode:</p>
+                    <ol class="steps">
+                        <li><strong>Click จุด A</strong> — จุดเริ่มต้น</li>
+                        <li><strong>Click จุด B</strong> — จุดสิ้นสุด (กำหนดทิศทางและระยะห่าง)</li>
+                        <li>พิมพ์จำนวนใน VCB:</li>
+                    </ol>
+                    <table>
+                        <tr><th>คำสั่ง</th><th>ความหมาย</th></tr>
+                        <tr><td><code>*5</code> หรือ <code>x5</code></td><td><strong>Copy Array</strong> — วาง 4 ตัวเพิ่มหลังจุด B ด้วยระยะห่างเท่ากับ A→B</td></tr>
+                        <tr><td><code>/5</code></td><td><strong>Divide Array</strong> — แบ่ง 5 ตัวเท่าๆ กันระหว่าง A ถึง B</td></tr>
+                    </table>
+                    <p>สามารถพิมพ์ซ้ำเพื่อเปลี่ยนจำนวนได้ (ระบบจะลบตัวเก่าแล้ววางใหม่อัตโนมัติ)</p>
+                </div>
+            </details>
+
+            <details>
+                <summary>↔ Offset Mode — เลื่อนตำแหน่ง Component Axis</summary>
+                <div class="detail-content">
+                    <p>กด <kbd>Ctrl</kbd> เพื่อเข้า Offset Mode แล้วพิมพ์ค่าใน VCB:</p>
+                    <table>
+                        <tr><th>รูปแบบ</th><th>ตัวอย่าง</th><th>ผลลัพธ์</th></tr>
+                        <tr><td><code>X,Y,Z</code></td><td><code>100mm,50mm,0</code></td><td>กำหนด Offset ทั้ง 3 แกน</td></tr>
+                        <tr><td><code>X=val</code></td><td><code>X=100mm</code></td><td>กำหนดเฉพาะแกน X</td></tr>
+                        <tr><td><code>Y=val</code></td><td><code>Y=50mm</code></td><td>กำหนดเฉพาะแกน Y</td></tr>
+                        <tr><td><code>ตัวเลข</code></td><td><code>120mm</code></td><td>กำหนดเฉพาะแกน Z</td></tr>
+                    </table>
+                    <p>ค่า Offset จะถูกจำไว้ใช้ครั้งต่อไป กด <kbd>Esc</kbd> เพื่อออกจาก Offset Mode</p>
+                </div>
+            </details>
+
+            <a href="#top" class="back-top">▲ กลับด้านบน</a>
+        </div>
+
+        <hr>
+
+        <!-- ==================== PLACE ON WALL ==================== -->
+        <div class="section" id="place-on-wall">
+            <div class="section-title"><span class="icon">🧱</span> Place Device with Ref_Point — วางบนผนัง</div>
+
+            <p>
+                โหมดวางอุปกรณ์บนผนังแบบแม่นยำ โดยระบุจุดอ้างอิง (Reference Point) และระยะแนวนอน/แนวตั้ง
+            </p>
+
+            <h3>ขั้นตอน 4 ขั้น</h3>
+            <ol class="steps orange">
+                <li><strong>Click Face ของผนัง</strong> — ระบบจะคำนวณแกน H (แนวนอน, สีแดง) และ V (แนวตั้ง, สีน้ำเงิน) อัตโนมัติ</li>
+                <li><strong>Click จุดอ้างอิง (Ref Point)</strong> — เช่น มุมผนัง หรือขอบประตู</li>
+                <li><strong>กำหนดระยะแนวนอน</strong> — เลื่อนเมาส์ไปทิศที่ต้องการแล้ว Click หรือพิมพ์ระยะใน VCB เช่น <code>50cm</code></li>
+                <li><strong>กำหนดระยะแนวตั้ง</strong> — เลื่อนเมาส์ขึ้น/ลงแล้ว Click หรือพิมพ์ระยะใน VCB เช่น <code>1.2m</code> → อุปกรณ์จะถูกวาง!</li>
+            </ol>
+
+            <div class="info-box orange">
+                <div class="box-title">💡 เทคนิค</div>
+                - กด <kbd>Tab</kbd> เพื่อสลับทิศทาง (ซ้าย/ขวา หรือ ขึ้น/ลง) ในขั้นตอนที่ 3 และ 4<br>
+                - กด <kbd>Esc</kbd> เพื่อย้อนกลับทีละขั้น<br>
+                - หลังวางแล้ว ระบบจะกลับไปขั้นตอนที่ 2 เพื่อวางต่อบนผนังเดิม<br>
+                - กด <kbd>Shift</kbd> + ลูกศร เพื่อหมุนอุปกรณ์<br>
+                - กด <kbd>Ctrl</kbd> เพื่อเข้า Offset Mode
+            </div>
+
+            <a href="#top" class="back-top">▲ กลับด้านบน</a>
+        </div>
+
+        <hr>
+
+        <!-- ==================== WIRINGS PANEL ==================== -->
+        <div class="section" id="wirings-panel">
+            <div class="section-title"><span class="icon">🔌</span> Wirings Panel — การวาดสายไฟ</div>
+
+            <p>
+                Panel นี้ใช้สำหรับเลือกชนิดสายไฟและวาดเส้นสายลงบนโมเดล มี 2 โหมด: <strong>Arc Mode</strong> (เส้นโค้ง) และ <strong>Line Mode</strong> (เส้นตรง)
+            </p>
+
+            <h3>ขั้นตอนการวาดสายไฟ</h3>
+            <ol class="steps green">
+                <li>เลือกชนิดสายไฟจาก Dropdown <strong>"Select Wire Type"</strong></li>
+                <li>กดปุ่ม <span class="badge green">🔗 Draw Wiring-Arc</span></li>
+                <li><strong>Click จุดเริ่มต้น</strong> → <strong>Click จุดปลาย</strong> → ระบบจะวาดเส้นอัตโนมัติ</li>
+                <li>จุดปลายจะกลายเป็นจุดเริ่มต้นใหม่ → Click ต่อเพื่อวาดต่อเนื่อง (Chain Mode)</li>
+                <li>กด <kbd>Space</kbd> เพื่อจบ → ระบบจะรวมเส้นทั้งหมดเป็น Group พร้อมตั้งชื่อ Tag</li>
+            </ol>
+
+            <h3>ชนิดสายไฟที่มีให้เลือก</h3>
+            <table>
+                <tr><th>หมวด</th><th>ตัวอย่าง</th></tr>
+                <tr><td><strong>สาย mm²</strong></td><td>2x1.5, 3x1.5, 2x2.5, 3x2.5, 5x2.5, 2x6.0, 3x10, 5x16, 5x35 ฯลฯ</td></tr>
+                <tr><td><strong>สาย Data/Telecom</strong></td><td>1x RJ45, 1x TV, 1x Telephone</td></tr>
+            </table>
+
+            <div class="info-box green">
+                <div class="box-title">🎨 ระบบสี</div>
+                แต่ละชนิดสายไฟจะได้สีที่แตกต่างกันอัตโนมัติ ทั้งสีของ Tag และ Material
+                ทำให้แยกแยะสายไฟต่างชนิดได้ง่าย ระบบจะเปลี่ยนเป็น "Color by Material" อัตโนมัติ
+            </div>
+
+            <a href="#top" class="back-top">▲ กลับด้านบน</a>
+        </div>
+
+        <hr>
+
+        <!-- ==================== ARC MODE ==================== -->
+        <div class="section" id="draw-arc">
+            <div class="section-title"><span class="icon">〰️</span> Arc Mode — วาดเส้นโค้ง</div>
+
+            <p>
+                โหมดเริ่มต้นสำหรับวาดสายไฟ ระบบจะสร้างเส้นโค้ง (Arc) ระหว่าง 2 จุดที่ Click
+            </p>
+
+            <h3>Keyboard Shortcuts — Arc Mode</h3>
+            <table>
+                <tr><th>ปุ่ม</th><th>การทำงาน</th></tr>
+                <tr><td><kbd>Click</kbd> + <kbd>Click</kbd></td><td>วาดเส้นโค้งระหว่าง 2 จุด</td></tr>
+                <tr><td><kbd>Tab</kbd></td><td>สลับทิศทางโค้ง (Bulge + / Bulge -)</td></tr>
+                <tr><td><kbd>Alt</kbd></td><td>เปลี่ยนความโค้ง: H=1/4 → H=1/6 → H=1/8 → วนรอบ</td></tr>
+                <tr><td><kbd>Ctrl</kbd></td><td>สลับเป็น Line Mode</td></tr>
+                <tr><td><kbd>Shift</kbd> (ค้างไว้)</td><td>Lock แกนอัตโนมัติตามทิศทาง</td></tr>
+                <tr><td><kbd>→</kbd></td><td>Lock แกน X (แดง)</td></tr>
+                <tr><td><kbd>←</kbd></td><td>Lock แกน Y (เขียว)</td></tr>
+                <tr><td><kbd>↑</kbd></td><td>Lock แกน Z (น้ำเงิน)</td></tr>
+                <tr><td><kbd>↓</kbd></td><td>ปลด Lock แกน</td></tr>
+                <tr><td><kbd>Esc</kbd></td><td>ยกเลิกจุดปัจจุบัน / กลับไปจุดเริ่มต้น</td></tr>
+                <tr><td><kbd>Space</kbd></td><td>จบการวาด → รวม Group + ตั้งชื่อ Tag</td></tr>
+            </table>
+
+            <div class="info-box blue">
+                <div class="box-title">📏 ความโค้ง (Bulge Height)</div>
+                ค่า Bulge = ระยะระหว่าง 2 จุด หารด้วย Denominator<br>
+                - <strong>H=1/4</strong> — โค้งมาก (ค่าเริ่มต้น)<br>
+                - <strong>H=1/6</strong> — โค้งปานกลาง<br>
+                - <strong>H=1/8</strong> — โค้งน้อย (เกือบตรง)<br>
+                กด <kbd>Alt</kbd> เพื่อเปลี่ยน
+            </div>
+
+            <a href="#top" class="back-top">▲ กลับด้านบน</a>
+        </div>
+
+        <hr>
+
+        <!-- ==================== LINE MODE ==================== -->
+        <div class="section" id="draw-line">
+            <div class="section-title"><span class="icon">📏</span> Line Mode — วาดเส้นตรง + Fillet อัตโนมัติ</div>
+
+            <p>
+                กด <kbd>Ctrl</kbd> ขณะวาดสายไฟเพื่อสลับเป็น Line Mode
+                เมื่อวาดเส้นตรงหักมุม 90° ระบบจะสร้าง <strong>Fillet (โค้งมน)</strong> ที่มุมอัตโนมัติ
+            </p>
+
+            <h3>ฟีเจอร์ Line Mode</h3>
+            <ul>
+                <li>วาดเส้นตรงเชื่อมระหว่าง 2 จุด</li>
+                <li>เมื่อหักมุม 90° → ระบบจะตัดมุมแล้วใส่โค้ง Fillet อัตโนมัติ</li>
+                <li>พิมพ์ค่า <strong>Fillet Radius</strong> ใน VCB เพื่อเปลี่ยนรัศมีโค้ง (ค่าเริ่มต้น 60mm)</li>
+            </ul>
+
+            <div class="info-box green">
+                <div class="box-title">💡 ตัวอย่างการใช้งาน</div>
+                1. กด <kbd>Ctrl</kbd> เพื่อสลับเป็น Line Mode<br>
+                2. Click จุดแรก → Click จุดที่ 2 (วาดเส้นตรง)<br>
+                3. Click จุดที่ 3 ที่หักมุม 90° → ระบบสร้าง Fillet อัตโนมัติ<br>
+                4. พิมพ์ <code>80mm</code> ใน VCB เพื่อเปลี่ยนรัศมี Fillet<br>
+                5. กด <kbd>Space</kbd> เพื่อจบ
+            </div>
+
+            <a href="#top" class="back-top">▲ กลับด้านบน</a>
+        </div>
+
+        <hr>
+
+        <!-- ==================== CUSTOM DEVICE ==================== -->
+        <div class="section" id="custom-device">
+            <div class="section-title"><span class="icon">🛠</span> Custom Device — สร้างอุปกรณ์เอง</div>
+
+            <p>
+                หากอุปกรณ์ที่ต้องการไม่มีในรายการ สามารถสร้างจาก Group หรือ Component ที่มีอยู่ในโมเดลได้
+            </p>
+
+            <ol class="steps">
+                <li>สร้างหรือ Import โมเดลอุปกรณ์ใน SketchUp แล้วทำเป็น <strong>Group</strong> หรือ <strong>Component</strong></li>
+                <li><strong>Select</strong> Group/Component นั้น 1 ชิ้น</li>
+                <li>ในช่อง <strong>"Custom Device"</strong> พิมพ์ชื่ออุปกรณ์</li>
+                <li>กดปุ่ม <span class="badge purple">Apply</span></li>
+                <li>ระบบจะบันทึกเป็นไฟล์ .skp ในโฟลเดอร์ components และเพิ่มเข้ารายการ</li>
+            </ol>
+
+            <div class="info-box purple">
+                <div class="box-title">⚠️ ข้อควรรู้</div>
+                - ต้อง Select ชิ้นงาน 1 ชิ้นก่อนกด Apply<br>
+                - Group จะถูกแปลงเป็น Component อัตโนมัติ<br>
+                - อุปกรณ์ที่สร้างจะใช้ได้เฉพาะ Session นี้ (ไฟล์ .skp ถูกบันทึกแล้ว แต่รายการจะรีเซ็ตเมื่อปิด Dialog)
+            </div>
+
+            <a href="#top" class="back-top">▲ กลับด้านบน</a>
+        </div>
+
+        <hr>
+
+        <!-- ==================== CUSTOM WIRING ==================== -->
+        <div class="section" id="custom-wiring">
+            <div class="section-title"><span class="icon">🔗</span> Custom Wiring — สร้างชนิดสายไฟเอง</div>
+
+            <p>
+                สามารถเพิ่มชนิดสายไฟที่ไม่มีในรายการได้ เช่น สายขนาดพิเศษ หรือสายที่ระบุท่อร้อย
+            </p>
+
+            <ol class="steps green">
+                <li>ในช่อง <strong>"Custom Wiring"</strong> พิมพ์ชื่อสายไฟ เช่น <code>2x4.0mm² IEC01,20mm EMT</code></li>
+                <li>กดปุ่ม <span class="badge green">Apply</span></li>
+                <li>สายไฟใหม่จะถูกเพิ่มเข้ารายการและเลือกอัตโนมัติ</li>
+            </ol>
+
+            <a href="#top" class="back-top">▲ กลับด้านบน</a>
+        </div>
+
+        <hr>
+
+        <!-- ==================== LEVEL PARAMETER ==================== -->
+        <div class="section" id="level-param">
+            <div class="section-title"><span class="icon">📐</span> Level Parameter — ปรับระดับความสูง</div>
+
+            <p>
+                ใช้สำหรับปรับความสูงของอุปกรณ์ไฟฟ้าที่มี Attribute "SU_Electrical_Height" เป็นกลุ่ม
+            </p>
+
+            <ol class="steps">
+                <li>เลือก <strong>Level</strong> จาก Dropdown เช่น Ceiling Light, Switch, Receptacle</li>
+                <li>พิมพ์ค่าความสูงในช่องถัดมา เช่น <code>1.2m</code>, <code>120cm</code>, <code>1200mm</code></li>
+                <li>กดปุ่ม <span class="badge purple">Update</span></li>
+                <li>ระบบจะปรับความสูง "EE_Device" ของอุปกรณ์ที่ตรงตาม Level ที่เลือก</li>
+            </ol>
+
+            <table>
+                <tr><th>Level</th><th>ปรับอุปกรณ์ประเภท</th></tr>
+                <tr><td>Ceiling Light</td><td>ไฟเพดาน</td></tr>
+                <tr><td>Wall Light</td><td>ไฟผนัง</td></tr>
+                <tr><td>Switch</td><td>สวิตช์</td></tr>
+                <tr><td>Receptacle</td><td>ปลั๊กไฟ</td></tr>
+                <tr><td>Load Panel</td><td>ตู้โหลด</td></tr>
+                <tr><td>Custom#1, #2</td><td>กำหนดเอง</td></tr>
+            </table>
+
+            <a href="#top" class="back-top">▲ กลับด้านบน</a>
+        </div>
+
+        <hr>
+
+        <!-- ==================== TAG VIEW ==================== -->
+        <div class="section" id="tag-view">
+            <div class="section-title"><span class="icon">👁</span> Tag View Mode — สลับการแสดงผล</div>
+
+            <p>
+                ปุ่ม <strong>👁</strong> ที่อยู่ข้าง "Select Device" ใช้สลับการแสดงผล Tag:
+            </p>
+
+            <table>
+                <tr><th>โหมด</th><th>สี</th><th>แสดง</th></tr>
+                <tr><td><strong>All</strong></td><td><span class="badge blue">น้ำเงิน</span></td><td>แสดงทั้ง EE_2D และ EE_Device</td></tr>
+                <tr><td><strong>3D</strong></td><td><span class="badge green">เขียว</span></td><td>ซ่อน EE_2D แสดงเฉพาะ EE_Device (3 มิติ)</td></tr>
+                <tr><td><strong>2D</strong></td><td><span class="badge orange">ส้ม</span></td><td>ซ่อน EE_Device แสดงเฉพาะ EE_2D (ผังพื้น) + Color by Material</td></tr>
+            </table>
+
+            <a href="#top" class="back-top">▲ กลับด้านบน</a>
+        </div>
+
+        <hr>
+
+        <!-- ==================== ASSIGN LOAD ==================== -->
+        <div class="section" id="assign-load">
+            <div class="section-title"><span class="icon">⚡</span> Assign Load — กำหนดโหลดไฟฟ้า</div>
+
+            <p>
+                เครื่องมือสำหรับกำหนดค่าโหลดไฟฟ้า (Watts) และประเภทอุปกรณ์ให้กับ Entity ที่เลือก
+            </p>
+
+            <ol class="steps">
+                <li><strong>Select</strong> วัตถุอย่างน้อย 1 ชิ้นใน SketchUp</li>
+                <li>เปิด <strong>"Assign Electrical Load"</strong> จาก Toolbar</li>
+                <li>กำหนด <strong>Device Type</strong> (ประเภทอุปกรณ์) และ/หรือ <strong>Load (Watts)</strong></li>
+                <li>กดปุ่ม <strong>Apply</strong></li>
+                <li>ระบบจะบันทึก Attribute ลงบน Entity ที่เลือก พร้อม Highlight สีเขียวยืนยัน</li>
+            </ol>
+
+            <div class="info-box blue">
+                <div class="box-title">💡 หมายเหตุ</div>
+                - ต้อง Select วัตถุก่อนเปิด Dialog<br>
+                - สามารถ Select หลายชิ้นพร้อมกันได้ (กำหนดค่าเดียวกันทุกชิ้น)<br>
+                - ค่าที่กำหนดจะถูกใช้ในการคำนวณวงจร (Create Circuit)
+            </div>
+
+            <a href="#top" class="back-top">▲ กลับด้านบน</a>
+        </div>
+
+        <hr>
+
+        <!-- ==================== CREATE CIRCUIT ==================== -->
+        <div class="section" id="create-circuit">
+            <div class="section-title"><span class="icon">🔄</span> Create Circuit — สร้าง/อัพเดตวงจร</div>
+
+            <p>
+                เครื่องมือสำหรับรวม Entity ที่กำหนดโหลดแล้วเป็นวงจรไฟฟ้า พร้อมคำนวณค่าทางไฟฟ้าอัตโนมัติ
+            </p>
+
+            <h3>สร้างวงจรใหม่ (Create Mode)</h3>
+            <ol class="steps">
+                <li><strong>Select</strong> วัตถุที่ต้องการรวมเป็นวงจร (ต้องมีโหลดอย่างน้อย 1 ชิ้น)</li>
+                <li>เปิด <strong>"Create Circuit"</strong> จาก Toolbar</li>
+                <li>กำหนดพารามิเตอร์: ชื่อวงจร, แรงดัน, เฟส, Power Factor</li>
+                <li>ระบบจะคำนวณและแสดงผล → กด <strong>Update</strong> เพื่อยืนยัน</li>
+                <li>วัตถุทั้งหมดจะถูกรวมเป็น Group พร้อมบันทึก Attribute</li>
+            </ol>
+
+            <h3>อัพเดตวงจรที่มีอยู่ (Update Mode)</h3>
+            <p>
+                Select Group วงจรที่สร้างไว้แล้ว → เปิด Create Circuit →
+                ระบบจะคำนวณค่าใหม่จาก Entity ภายใน Group อัตโนมัติ
+            </p>
+
+            <div class="info-box green">
+                <div class="box-title">📊 ค่าที่คำนวณ</div>
+                - <strong>Connected Load (W)</strong> — โหลดรวม<br>
+                - <strong>Current (A)</strong> — กระแสไฟฟ้า<br>
+                - <strong>Wire Size</strong> — ขนาดสายที่แนะนำ<br>
+                - <strong>Breaker Size</strong> — ขนาดเบรกเกอร์ที่แนะนำ<br>
+                - ชื่อวงจรจะถูกตั้งอัตโนมัติเป็น LP-1, LP-2, ... (เลขรันต่อจากที่มีอยู่)
+            </div>
+
+            <a href="#top" class="back-top">▲ กลับด้านบน</a>
+        </div>
+
+        <hr>
+
+        <!-- ==================== SHORTCUTS SUMMARY ==================== -->
+        <div class="section" id="shortcuts">
+            <div class="section-title"><span class="icon">⌨️</span> สรุป Keyboard Shortcuts</div>
+
+            <h3>Place Device Tool</h3>
+            <table>
+                <tr><th>ปุ่ม</th><th>การทำงาน</th></tr>
+                <tr><td><kbd>Click</kbd></td><td>วางอุปกรณ์</td></tr>
+                <tr><td><kbd>Shift</kbd> + <kbd>→←↑</kbd></td><td>หมุน X / Y / Z (+90°)</td></tr>
+                <tr><td><kbd>→←↑</kbd></td><td>Lock แกน X / Y / Z</td></tr>
+                <tr><td><kbd>Tab</kbd></td><td>Toggle Copy Array</td></tr>
+                <tr><td><kbd>Ctrl</kbd></td><td>Toggle Offset Mode</td></tr>
+                <tr><td><kbd>Alt</kbd></td><td>Toggle Z-Plane Mode</td></tr>
+                <tr><td><kbd>Esc</kbd></td><td>ยกเลิก / ออก</td></tr>
+            </table>
+
+            <h3>Place on Wall Tool</h3>
+            <table>
+                <tr><th>ปุ่ม</th><th>การทำงาน</th></tr>
+                <tr><td><kbd>Click</kbd></td><td>เลือก Face / Ref Point / กำหนดระยะ</td></tr>
+                <tr><td><kbd>Tab</kbd></td><td>สลับทิศทาง (ซ้าย↔ขวา / ขึ้น↔ลง)</td></tr>
+                <tr><td><kbd>Shift</kbd> + <kbd>→←↑</kbd></td><td>หมุน X / Y / Z</td></tr>
+                <tr><td><kbd>Ctrl</kbd></td><td>Toggle Offset Mode</td></tr>
+                <tr><td><kbd>Esc</kbd></td><td>ย้อนกลับทีละขั้น</td></tr>
+                <tr><td>VCB</td><td>พิมพ์ระยะ เช่น <code>1.2m</code></td></tr>
+            </table>
+
+            <h3>Draw Wiring Tool</h3>
+            <table>
+                <tr><th>ปุ่ม</th><th>การทำงาน</th></tr>
+                <tr><td><kbd>Click</kbd> + <kbd>Click</kbd></td><td>วาดเส้น Arc / Line ระหว่าง 2 จุด</td></tr>
+                <tr><td><kbd>Ctrl</kbd></td><td>Toggle Arc ↔ Line Mode</td></tr>
+                <tr><td><kbd>Tab</kbd></td><td>สลับทิศทางโค้ง (Arc Mode)</td></tr>
+                <tr><td><kbd>Alt</kbd></td><td>เปลี่ยนความโค้ง 1/4 → 1/6 → 1/8 (Arc Mode)</td></tr>
+                <tr><td><kbd>Shift</kbd> (ค้าง)</td><td>Lock แกนอัตโนมัติ</td></tr>
+                <tr><td><kbd>→←↑</kbd></td><td>Lock แกน X / Y / Z</td></tr>
+                <tr><td><kbd>↓</kbd></td><td>ปลด Lock แกน</td></tr>
+                <tr><td><kbd>Esc</kbd></td><td>ยกเลิกจุดปัจจุบัน</td></tr>
+                <tr><td><kbd>Space</kbd></td><td>จบ → รวม Group + Tag</td></tr>
+                <tr><td>VCB (Line Mode)</td><td>กำหนด Fillet Radius เช่น <code>80mm</code></td></tr>
+            </table>
+
+            <a href="#top" class="back-top">▲ กลับด้านบน</a>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        SKH Electrical Tool — User Manual<br>
+        สร้างจาก Source Code v2025
+    </div>
+
+</body>
+
+</html>
