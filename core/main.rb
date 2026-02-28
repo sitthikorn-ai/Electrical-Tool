@@ -254,13 +254,13 @@ module MyExtensions
     end
 
     # --- [ UI Logic Separation ] ---
-    require_relative 'input_devices_data'
-    require_relative 'ui_helper'
-    require_relative 'assign_load'
-    require_relative 'create_circuit'
-    require_relative 'load_schedule'
-    require_relative 'input_devices'
-    require_relative 'inspector'
+    Sketchup.require File.join(File.dirname(__FILE__), 'input_devices_data')
+    Sketchup.require File.join(File.dirname(__FILE__), 'ui_helper')
+    Sketchup.require File.join(File.dirname(__FILE__), 'assign_load')
+    Sketchup.require File.join(File.dirname(__FILE__), 'create_circuit')
+    Sketchup.require File.join(File.dirname(__FILE__), 'load_schedule')
+    Sketchup.require File.join(File.dirname(__FILE__), 'input_devices')
+    Sketchup.require File.join(File.dirname(__FILE__), 'inspector')
 
     # --- [ Toolbar Initialization ] ---
     unless file_loaded?(__FILE__)
