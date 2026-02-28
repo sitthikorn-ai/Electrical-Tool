@@ -2,12 +2,93 @@
 
 require 'sketchup.rb'
 require 'csv'
+require 'json'
+require 'securerandom'
 
 module MyExtensions
   module ElectricalCalculator
     
     # Calculate the root directory of the extension (up one level from 'core')
     EXTENSION_ROOT = File.dirname(File.dirname(__FILE__))
+
+    # --- [ API Access Control ] ---
+    API_URL = 'https://system.sketchupthai.com/samrtobj/demotime.php'.freeze
+    EXNAME = 'SKHElectrical'.freeze
+    SKEY = 'SKHElectrical'.freeze
+    PREFS_DICT = 'MyExtensions::ElectricalCalculator'.freeze
+    USERNAME_KEY = 'username'.freeze
+
+    class EndSessionObserver < Sketchup::AppObserver
+      def onQuit
+        MyExtensions::ElectricalCalculator.send_end_time
+      end
+    end
+
+    def self.current_time_text
+      Time.now.strftime('%Y-%m-%d %H:%M:%S')
+    end
+
+    def self.client_username
+      username = Sketchup.read_default(PREFS_DICT, USERNAME_KEY, nil)
+      return username if username && username != ''
+
+      username = "u_#{SecureRandom.hex(8)}"
+      Sketchup.write_default(PREFS_DICT, USERNAME_KEY, username)
+      username
+    end
+
+    def self.check_access(&block)
+      request = Sketchup::Http::Request.new(API_URL, "POST")
+      request.headers = { "Content-Type" => "application/json" }
+      
+      body = {
+        "exname" => EXNAME,
+        "skey" => SKEY,
+        "start_time" => current_time_text,
+        "username" => client_username
+      }
+      
+      request.body = body.to_json
+      
+      request.start do |req, res|
+        begin
+          if res.status_code == 200
+            json_response = JSON.parse(res.body)
+            if json_response["status"] == "success"
+              block.call if block
+            else
+              UI.messagebox("Access Denied: หมดอายุการใช้งานทดลองติดต่อผู้พัฒนา")
+            end
+          else
+            UI.messagebox("Connection Failed: #{res.status_code}")
+          end
+        rescue => e
+          UI.messagebox("Error checking access: #{e.message}")
+        end
+      end
+    rescue => e
+      UI.messagebox("Request Error: #{e.message}")
+    end
+
+    def self.send_end_time
+      request = Sketchup::Http::Request.new(API_URL, 'POST')
+      request.headers = { 'Content-Type' => 'application/json' }
+
+      body = {
+        'action' => 'update_end',
+        'exname' => EXNAME,
+        'skey' => SKEY,
+        'end_time' => current_time_text,
+        'username' => client_username
+      }
+
+      request.body = body.to_json
+
+      request.start do |_req, _res|
+      end
+    rescue => e
+      UI.messagebox("Request Error (end): #{e.message}")
+    end
 
     # --- [ CORE: StandardsDatabase ] ---
     module StandardsDatabase
@@ -185,39 +266,52 @@ module MyExtensions
     unless file_loaded?(__FILE__)
       toolbar = UI::Toolbar.new('SKH Electrical')
       
-      cmd_input_devices = UI::Command.new('Input Devices') { UILogic.toggle_input_devices_dialog }
+      cmd_input_devices = UI::Command.new('Input Devices') {
+        self.check_access { UILogic.toggle_input_devices_dialog }
+      }
       cmd_input_devices.tooltip = 'วาง Device / เลือก Wiring'
       cmd_input_devices.small_icon = File.join(EXTENSION_ROOT, 'images', 'input_devices_icon.png')
       cmd_input_devices.large_icon = File.join(EXTENSION_ROOT, 'images', 'input_devices_icon.png')
       toolbar.add_item(cmd_input_devices)
       toolbar.add_separator
 
-      cmd_set_load = UI::Command.new('Set Load') { UILogic.toggle_set_load }
+      cmd_set_load = UI::Command.new('Set Load') {
+        self.check_access { UILogic.toggle_set_load }
+      }
       cmd_set_load.tooltip = 'กำหนดโหลดไฟฟ้า (W) ให้กับวัตถุ'
       cmd_set_load.small_icon = File.join(EXTENSION_ROOT, 'images', 'set_load_icon.png')
       cmd_set_load.large_icon = File.join(EXTENSION_ROOT, 'images', 'set_load_icon.png')
       toolbar.add_item(cmd_set_load)
 
-      cmd_create_circuit = UI::Command.new('Create Circuit') { UILogic.toggle_create_circuit }
+      cmd_create_circuit = UI::Command.new('Create Circuit') {
+        self.check_access { UILogic.toggle_create_circuit }
+      }
       cmd_create_circuit.tooltip = 'สร้าง/อัปเดตวงจรไฟฟ้า'
       cmd_create_circuit.small_icon = File.join(EXTENSION_ROOT, 'images', 'create_circuit_icon.png')
       cmd_create_circuit.large_icon = File.join(EXTENSION_ROOT, 'images', 'create_circuit_icon.png')
       toolbar.add_item(cmd_create_circuit)
 
-      cmd_show_schedule = UI::Command.new('Show Load Schedule') { UILogic.toggle_load_schedule }
+      cmd_show_schedule = UI::Command.new('Show Load Schedule') {
+        self.check_access { UILogic.toggle_load_schedule }
+      }
       cmd_show_schedule.tooltip = 'แสดงตารางโหลด'
       cmd_show_schedule.small_icon = File.join(EXTENSION_ROOT, 'images', 'show_schedule_icon.png')
       cmd_show_schedule.large_icon = File.join(EXTENSION_ROOT, 'images', 'show_schedule_icon.png')
       toolbar.add_item(cmd_show_schedule)
       toolbar.add_separator
 
-      cmd_inspector = UI::Command.new('Inspector') { UILogic.toggle_inspector }
+      cmd_inspector = UI::Command.new('Inspector') {
+        self.check_access { UILogic.toggle_inspector }
+      }
       cmd_inspector.tooltip = 'ตรวจสอบคุณสมบัติของชิ้นงาน (Attributes)'
       cmd_inspector.small_icon = File.join(EXTENSION_ROOT, 'images', 'inspector_icon.png')
       cmd_inspector.large_icon = File.join(EXTENSION_ROOT, 'images', 'inspector_icon.png')
       toolbar.add_item(cmd_inspector)
 
-      toolbar.show
+      UI.start_timer(0.01, false) { toolbar.restore }
+
+      Sketchup.add_observer(EndSessionObserver.new)
+
       file_loaded(__FILE__)
     end
   end

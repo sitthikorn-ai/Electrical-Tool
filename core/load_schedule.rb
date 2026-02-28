@@ -529,7 +529,11 @@ module MyExtensions
           end
         end
 
-        dialog.set_on_closed { @dialog = nil; @last_data = nil }
+        dialog.set_on_closed {
+          @dialog = nil
+          @last_data = nil
+          MyExtensions::ElectricalCalculator.send_end_time
+        }
         dialog
       end
     end

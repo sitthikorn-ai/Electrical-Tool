@@ -3438,7 +3438,10 @@ module MyExtensions
           end
         end
 
-        dialog.set_on_closed { @input_devices_dialog = nil }
+        dialog.set_on_closed {
+          @input_devices_dialog = nil
+          MyExtensions::ElectricalCalculator.send_end_time
+        }
         @input_devices_dialog = dialog
         dialog.show
       end
